@@ -35,6 +35,7 @@ class DDS;
 namespace functions {
 
 void function_dilate_dap2_array(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp);
+libdap::BaseType *function_dilate_dap4_array(libdap::D4RValueList *args, libdap::DMR &dmr);
 
 /**
  * The DilateMaskFunction class encapsulates the array builder function
@@ -52,7 +53,7 @@ public:
         setRole("http://services.opendap.org/dap4/server-side-function/dilate_mask");
         setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions#dilate_mask");
         setFunction(function_dilate_dap2_array);
-	//        setFunction(function_dilate_mask_dap4_array);
+	    setFunction(function_dilate_dap4_array);
         setVersion("1.0");
     }
     virtual ~DilateArrayFunction()
