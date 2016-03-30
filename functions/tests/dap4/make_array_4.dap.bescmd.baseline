@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="function_results">
+    <Byte name="g1">
+        <Dim size="4"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>b63cfbcd</Value>
+        </Attribute>
+    </Byte>
+    <Int16 name="g2">
+        <Dim size="2"/>
+        <Dim size="2"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>cb23f6df</Value>
+        </Attribute>
+    </Int16>
+    <UInt16 name="g3">
+        <Dim size="2"/>
+        <Dim size="2"/>
+        <Dim size="2"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>0c4d33de</Value>
+        </Attribute>
+    </UInt16>
+</Dataset>
+
+The data:
+Byte g1[4] = {1, 2, 3, 4};
+Int16 g2[2][2] = {{21, 22},{23, 24}};
+UInt16 g3[2][2][2] = {{{21, 22},{23, 24}},{{21, 22},{23, 24}}};
+

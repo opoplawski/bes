@@ -34,11 +34,15 @@
 #include <DDS.h>
 #include <debug.h>
 #include <util.h>
+#include <BESDebug.h>
+#include <D4RValue.h>
 
 #include "GeoGridFunction.h"
 #include "GridGeoConstraint.h"
 #include "gse_parser.h"
 #include "grid_utils.h"
+
+#define DEBUG_KEY "geogrid"
 
 using namespace libdap;
 
@@ -78,9 +82,12 @@ namespace functions {
  @param btpp A pointer to the return value; caller must delete.
 
  @return The constrained and read Grid, ready to be sent. */
-void
-function_geogrid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+BaseType *
+geogrid_worker(vector<BaseType *> argv)
 {
+
+    int argc = argv.size();
+
     string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
     "<function name=\"geogrid\" version=\"1.2\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#geogrid\">\n"+
@@ -89,8 +96,7 @@ function_geogrid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     if (argc == 0) {
         Str *response = new Str("version");
         response->set_value(info);
-        *btpp = response;
-        return ;
+        return response;
     }
 
     // There are two main forms of this function, one that takes a Grid and one
@@ -186,8 +192,7 @@ function_geogrid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
 
         // In this function the l_grid pointer is the same as the pointer returned
         // by this call. The caller of the function must free the pointer.
-        *btpp = gc.get_constrained_grid();
-        return;
+        return gc.get_constrained_grid();
     }
     catch (Error &e) {
         throw e;
@@ -230,6 +235,41 @@ bool GeoGridFunction::canOperateOn(DDS &dds)
     //delete grids;
 
 	return usable;
+}
+
+void function_dap2_geogrid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap2_geogrid() - BEGIN" << endl);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_geogrid() - Building argument vector for geogrid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_geogrid() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    *btpp = geogrid_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_geogrid() - END (result: "<< (*btpp)->name() << ")" << endl);
+    return;
+}
+
+
+BaseType *function_dap4_geogrid(D4RValueList *dvl_args, DMR &dmr){
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_geogrid() - Building argument vector for bbox_union_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_geogrid() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    BaseType *result = geogrid_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_geogrid() - END (result: "<< result->name() << ")" << endl);
+    return result; //response.release();
 }
 
 } // namesspace libdap

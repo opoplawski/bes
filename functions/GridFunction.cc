@@ -34,10 +34,15 @@
 #include <DDS.h>
 #include <debug.h>
 #include <util.h>
+#include <BESDebug.h>
+#include <D4RValue.h>
 
 #include "GridFunction.h"
 #include "gse_parser.h"
 #include "grid_utils.h"
+
+#define DEBUG_KEY "grid"
+
 
 using namespace libdap;
 
@@ -72,9 +77,10 @@ namespace functions {
 
  @see geogrid() (func_geogrid_select) A function which has logic specific
  to longitude/latitude selection. */
-void
-function_grid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+BaseType *
+grid_worker(vector<BaseType *> argv)
 {
+    int argc = argv.size()
     DBG(cerr << "Entering function_grid..." << endl);
 
     string info =
@@ -85,8 +91,7 @@ function_grid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(info);
-        *btpp = response;
-        return;
+        return response;
     }
 
     Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
@@ -145,8 +150,7 @@ function_grid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     // values and building destination arrays with just those
     // values.
 
-    *btpp = l_grid;
-    return;
+    return l_grid;
 }
 
 /**
@@ -161,5 +165,42 @@ bool GridFunction::canOperateOn(DDS &dds) {
 
 	return !grids.empty();
 }
+
+void function_dap2_grid(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap2_grid() - BEGIN" << endl);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_grid() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_grid() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    *btpp = grid_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_grid() - END (result: "<< (*btpp)->name() << ")" << endl);
+    return;
+}
+
+
+BaseType *function_dap4_grid(D4RValueList *dvl_args, DMR &dmr){
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_grid() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_grid() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    BaseType *result = grid_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_grid() - END (result: "<< result->name() << ")" << endl);
+    return result;
+}
+
+
 
 } // namesspace functions

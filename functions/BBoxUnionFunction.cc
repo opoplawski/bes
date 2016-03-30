@@ -43,12 +43,98 @@
 
 #include "BBoxUnionFunction.h"
 #include "roi_util.h"
+#include <BESInternalError.h>
+
+#include <BESDebug.h>
+
+#define DEBUG_KEY "functions"
 
 using namespace std;
 using namespace libdap;
 
 namespace functions {
 
+Array *bbox_union_worker(vector<BaseType *> arrays){
+
+    unsigned int rank;
+    string operation;
+
+    // Vet the input: All bbox variables must be the same shape
+    rank = roi_valid_bbox(arrays[0]); // throws if bbox is not valid
+
+    // Actually, we could us names to form the unions - they don't
+    // really have to be the same shape, but this will do for now.
+    for (unsigned long i = 1; i < arrays.size()-1; ++i)
+        if (roi_valid_bbox(arrays[i]) != rank)
+            throw Error(malformed_expr, "In function bbox_union(): All bounding boxes must be the same shape to form their union.");
+
+    operation = extract_string_argument(arrays[arrays.size()-1]);
+    downcase(operation);
+
+
+
+    // For each BBox, for each dimension, update the union,
+    // using the first BBox as a starting point.
+
+    // Initialize a local data structure - used because it's much
+    // easier to read and write this than the DAP variables.
+    vector<slice> result(rank);     // struct slice is defined in roi_utils.h
+
+    for (unsigned int i = 0; i < rank; ++i) {
+        int start, stop;
+        string name;
+        // start, stop, name are value-result parameters; we know they are Array*
+        // because of the roi_valid_bbox() test.
+        roi_bbox_get_slice_data(static_cast<Array*>(arrays[0]), i, start, stop, name);
+
+        result.at(i).start = start;
+        result.at(i).stop = stop;
+        result.at(i).name = name;
+    }
+
+    // For each BBox, for each dimension...
+    for (unsigned long i = 1; i < arrays.size()-1; ++i) {
+        // cast is safe given the tests above
+        Array *bbox = static_cast<Array*>(arrays[i]);
+
+        for (unsigned long i = 0; i < rank; ++i) {
+            int start, stop;
+            string name;
+            // start, stop, name are value-result parameters
+            roi_bbox_get_slice_data(bbox, i, start, stop, name);
+
+            if (result.at(i).name != name)
+                throw Error("In function bbox_union(): named dimensions must match in the bounding boxes");
+
+            if (operation == "union") {
+                result.at(i).start = min(result.at(i).start, start);
+                result.at(i).stop = max(result.at(i).stop, stop);
+            }
+            else if (operation == "inter" || operation == "intersection") {
+                result.at(i).start = max(result.at(i).start, start);
+                result.at(i).stop = min(result.at(i).stop, stop);
+
+                if (result.at(i).stop < result.at(i).start)
+                    throw Error("In bbox_union(): The intersection of the bounding boxes is empty (dimension " + long_to_string(i) + ").");
+            }
+            else {
+                throw Error(malformed_expr, "In bbox_union(): Unknown operator '" + operation + "'; expected 'union', 'intersection' or 'inter'.");
+            }
+        }
+    }
+
+    // Build the response; name the result after the operation
+    auto_ptr<Array> response = roi_bbox_build_empty_bbox(rank, operation);
+    for (unsigned long i = 0; i < rank; ++i) {
+        Structure *slice = roi_bbox_build_slice(result.at(i).start, result.at(i).stop, result.at(i).name);
+        response->set_vec_nocopy(i, slice);
+    }
+
+
+    // Return the result
+    return response.release();
+
+}
 /**
  * @brief Combine several bounding boxes, forming their union.
  *
@@ -71,91 +157,26 @@ namespace functions {
 void
 function_dap2_bbox_union(int argc, BaseType *argv[], DDS &, BaseType **btpp)
 {
+    BESDEBUG(DEBUG_KEY, "function_dap2_bbox_union() - BEGIN" << endl);
     const string wrong_args = "Wrong number of arguments to bbox_union(). Expected one or more bounding boxes and a string naming the operation (2+ arguments)";
 
-    unsigned int rank = 0;
-    string operation = "";
-
-    switch (argc) {
-    case 0:
-    case 1:
-        // Must have 2 or more arguments
+    if(argc<2){
         throw Error(malformed_expr, wrong_args);
-
-    default:
-        // Vet the input: All bbox variables must be the same shape
-        rank = roi_valid_bbox(argv[0]); // throws if bbox is not valid
-
-        // Actually, we could us names to form the unions - they don't
-        // really have to be the same shape, but this will do for now.
-        for (int i = 1; i < argc-1; ++i)
-            if (roi_valid_bbox(argv[0]) != rank)
-                throw Error(malformed_expr, "In function bbox_union(): All bounding boxes must be the same shape to form their union.");
-
-        operation = extract_string_argument(argv[argc-1]);
-        downcase(operation);
-        break;
     }
 
-    // For each BBox, for each dimension, update the union,
-    // using the first BBox as a starting point.
-
-    // Initialize a local data structure - used because it's much
-    // easier to read and write this than the DAP variables.
-    vector<slice> result(rank);		// struct slice is defined in roi_utils.h
-
-    for (unsigned int i = 0; i < rank; ++i) {
-        int start, stop;
-        string name;
-        // start, stop, name are value-result parameters; we know they are Array*
-        // because of the roi_valid_bbox() test.
-        roi_bbox_get_slice_data(static_cast<Array*>(argv[0]), i, start, stop, name);
-
-        result.at(i).start = start;
-        result.at(i).stop = stop;
-        result.at(i).name = name;
+    BESDEBUG(DEBUG_KEY, "function_dap2_bbox_union() - Building argument vector for bbox_union_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_bbox_union() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
     }
 
-    // For each BBox, for each dimension...
-    for (int i = 1; i < argc-1; ++i) {
-        // cast is safe given the tests above
-        Array *bbox = static_cast<Array*>(argv[i]);
+    *btpp = bbox_union_worker(args);
+    (*btpp)->set_read_p(true);
+    (*btpp)->set_send_p(true);
 
-        for (unsigned int i = 0; i < rank; ++i) {
-            int start, stop;
-            string name;
-            // start, stop, name are value-result parameters
-            roi_bbox_get_slice_data(bbox, i, start, stop, name);
-
-            if (result.at(i).name != name)
-            	throw Error("In function bbox_union(): named dimensions must match in the bounding boxes");
-
-            if (operation == "union") {
-                result.at(i).start = min(result.at(i).start, start);
-                result.at(i).stop = max(result.at(i).stop, stop);
-            }
-            else if (operation == "inter" || operation == "intersection") {
-                result.at(i).start = max(result.at(i).start, start);
-                result.at(i).stop = min(result.at(i).stop, stop);
-
-                if (result.at(i).stop < result.at(i).start)
-                	throw Error("In bbox_union(): The intersection of the bounding boxes is empty (dimension " + long_to_string(i) + ").");
-            }
-            else {
-            	throw Error(malformed_expr, "In bbox_union(): Unknown operator '" + operation + "'; expected 'union', 'intersection' or 'inter'.");
-            }
-        }
-    }
-
-    // Build the response; name the result after the operation
-    auto_ptr<Array> response = roi_bbox_build_empty_bbox(rank, operation);
-    for (unsigned int i = 0; i < rank; ++i) {
-    	Structure *slice = roi_bbox_build_slice(result.at(i).start, result.at(i).stop, result.at(i).name);
-    	response->set_vec_nocopy(i, slice);
-    }
-
-    // Return the result
-    *btpp = response.release();
+    BESDEBUG(DEBUG_KEY, "function_dap2_bbox_union() - END(result name: "<< (*btpp)->name() << ")" << endl);
     return;
 }
 
@@ -170,13 +191,32 @@ function_dap2_bbox_union(int argc, BaseType *argv[], DDS &, BaseType **btpp)
  *
  * @see function_dap2_bbox
  */
-BaseType *function_dap4_bbox_union(D4RValueList *, DMR &)
+BaseType *function_dap4_bbox_union(D4RValueList *dvl_args, DMR &dmr)
 {
+    BESDEBUG(DEBUG_KEY, "function_dap4_bbox_union() - BEGIN" << endl);
+    const string wrong_args = "Wrong number of arguments to bbox_union(). Expected one or more bounding boxes and a string naming the operation (2+ arguments)";
+
+    if(dvl_args->size()<2){
+        throw Error(malformed_expr, wrong_args);
+    }
     //auto_ptr<Array> response(new Array("bbox", new Structure("bbox")));
 
-    throw Error(malformed_expr, "Not yet implemented for DAP4 functions.");
 
-    return 0; //response.release();
+    BESDEBUG(DEBUG_KEY, "function_dap4_bbox_union() - Building argument vector for bbox_union_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_bbox_union() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    BaseType *result = bbox_union_worker(args);
+    result->set_read_p(true);
+    result->set_send_p(true);
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_bbox_union() - END (result name: "<< result->name() << ")" << endl);
+
+    return result; //response.release();
 }
 
 } // namesspace functions

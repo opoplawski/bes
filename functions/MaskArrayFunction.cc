@@ -52,6 +52,8 @@
 #include "MakeArrayFunction.h"
 #include "functions_util.h"
 
+#define DEBUG_KEY "functions"
+
 using namespace libdap;
 
 namespace functions {
@@ -94,31 +96,19 @@ void mask_array_helper(Array *array, double no_data_value, const vector<dods_byt
     array->set_value(data, data.size());
 }
 
-/**
- * Implementation of the mask_array() function for DAP2.
- *
- * The mask_array() function takes one or more arrays and applies a mask
- * to the array, returning and array that holds the array's data values
- * wherever the mask is has a non-zero value and the supplied no-data
- * value otherwise.
- *
- * @param argc Three or more args
- * @param argv One or more arrays, a no data value and a mask array
- * @param dds Not used
- * @param btpp Value-result parameter that holds either the masked array
- * or a DAP2 String variable with usage information.
- */
-void function_mask_dap2_array(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+
+BaseType *mask_array_worker(vector<BaseType*> argv)
 {
+    int argc = argv.size();
+
     // Called with no args? Return usage information.
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(mask_array_info);
-        *btpp = response;
-        return;
+        return response;
     }
 
-    BESDEBUG("functions", "function_mask_dap2_array() -  argc: " << argc << endl);
+    BESDEBUG(DEBUG_KEY, "mask_array_worker() -  argc: " << argc << endl);
 
     // QC args: must have a mask, ND value and 1+ array.
     if (argc < 3) throw Error(malformed_expr, "In mask_array(Array1, ..., ArrayN, NoData, Mask) requires at least three arguments.");
@@ -188,8 +178,38 @@ void function_mask_dap2_array(int argc, BaseType * argv[], DDS &, BaseType **btp
     dest->set_read_p(true);
 
     // Return the array or structure containing the arrays
-    *btpp = dest;
+     return dest;
 
+}
+
+
+
+/**
+ * Implementation of the mask_array() function for DAP2.
+ *
+ * The mask_array() function takes one or more arrays and applies a mask
+ * to the array, returning and array that holds the array's data values
+ * wherever the mask is has a non-zero value and the supplied no-data
+ * value otherwise.
+ *
+ * @param argc Three or more args
+ * @param argv One or more arrays, a no data value and a mask array
+ * @param dds Not used
+ * @param btpp Value-result parameter that holds either the masked array
+ * or a DAP2 String variable with usage information.
+ */
+void function_mask_dap2_array(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - BEGIN" << endl);
+    BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+    *btpp = mask_array_worker(args);
+    BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - END (result: "<< (*btpp)->name() << ")" << endl);
     return;
 }
 
@@ -205,87 +225,18 @@ void function_mask_dap2_array(int argc, BaseType * argv[], DDS &, BaseType **btp
  * @param dmr
  * @return The masked array or a DAP4 String with usage information
  */
-BaseType *function_mask_dap4_array(D4RValueList *args, DMR &dmr)
+BaseType *function_mask_dap4_array(D4RValueList *dvl_args, DMR &dmr)
 {
-    // DAP4 function porting information: in place of 'argc' use 'args.size()'
-    if (args == 0 || args->size() == 0) {
-        Str *response = new Str("info");
-        response->set_value(mask_array_info);
-        // DAP4 function porting: return a BaseType* instead of using the value-result parameter
-        return response;
+    BESDEBUG(DEBUG_KEY, "function_dap4_make_mask() - Building argument vector for make_mask_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_make_mask() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
     }
-
-    // Check for 3+ arguments
-    if (args->size() < 3) throw Error(malformed_expr, "In mask_array(Array1, ..., ArrayN, NoData, Mask) requires at least three arguments.");
-
-    // Get the NoData value (second to last last); it must be a number
-    double no_data_value = extract_double_value(args->get_rvalue(args->size()-2)->value(dmr));
-
-    // Get the mask (last arg), which must be a DAP Byte array
-    BaseType *mask_btp = args->get_rvalue(args->size()-1)->value(dmr);
-    check_number_type_array (mask_btp);      // Throws Error if not a numeric array
-    Array *mask_var = static_cast<Array*>(mask_btp);
-    if (mask_var->var()->type() != dods_byte_c)
-        throw Error(malformed_expr, "In mask_array(): Expected the last argument (the mask) to be a byte array.");
-
-    mask_var->read();
-    mask_var->set_read_p(true);
-    vector<dods_byte> mask(mask_var->length());
-    mask_var->value(&mask[0]);     // get the value
-
-    // Now mask the arrays
-    for (unsigned int i = 0; i < args->size() - 2; ++i) {
-        BaseType *array_btp = args->get_rvalue(i)->value(dmr);
-        check_number_type_array (array_btp);
-        Array *array = static_cast<Array*>(array_btp);
-        // The Mask and Array(s) should match in shape, but to simplify use, we test
-        // only that they have the same number of elements.
-        if ((vector<dods_byte>::size_type) array->length() != mask.size())
-            throw Error(malformed_expr,
-                    "In make_array(): The array '" + array->name() + "' and the mask do not match in size.");
-
-        switch (array->var()->type()) {
-        case dods_byte_c:
-            mask_array_helper<dods_byte>(array, no_data_value, mask);
-            break;
-        case dods_int16_c:
-            mask_array_helper<dods_int16>(array, no_data_value, mask);
-            break;
-        case dods_uint16_c:
-            mask_array_helper<dods_uint16>(array, no_data_value, mask);
-            break;
-        case dods_int32_c:
-            mask_array_helper<dods_int32>(array, no_data_value, mask);
-            break;
-        case dods_uint32_c:
-            mask_array_helper<dods_uint32>(array, no_data_value, mask);
-            break;
-        case dods_float32_c:
-            mask_array_helper<dods_float32>(array, no_data_value, mask);
-            break;
-        case dods_float64_c:
-            mask_array_helper<dods_float64>(array, no_data_value, mask);
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "In mask_array(): Type " + array->type_name() + " not handled.");
-        }
-    }
-
-    // Build the return value(s) - this means make copies of the masked arrays
-    BaseType *dest = 0; // null_ptr
-    if (args->size() == 3)
-        dest = args->get_rvalue(0)->value(dmr)->ptr_duplicate();
-    else {
-        dest = new Structure("masked_arays");
-        for (unsigned int i = 0; i < args->size() - 2; ++i) {
-            dest->add_var(args->get_rvalue(i)->value(dmr));     //add_var() copies its arg
-        }
-    }
-
-    dest->set_send_p(true);
-    dest->set_read_p(true);
-
-    return dest;
+    BaseType *result = mask_array_worker(args);
+    BESDEBUG(DEBUG_KEY, "function_dap4_make_mask() - END (result: "<< result->name() << ")" << endl);
+    return result;
 }
 
 } // namesspace functions

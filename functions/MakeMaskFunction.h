@@ -49,6 +49,7 @@ template<typename T>
 void make_mask_helper(const std::vector<libdap::Array*> dims, libdap::Array *tuples, std::vector<libdap::dods_byte> &mask);
 
 void function_dap2_make_mask(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp);
+libdap::BaseType *function_dap4_make_mask(libdap::D4RValueList *args, libdap::DMR &dmr);
 
 /**
  * The MakeMaskFunction class encapsulates the array builder function
@@ -66,7 +67,7 @@ public:
         setRole("http://services.opendap.org/dap4/server-side-function/make_mask");
         setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions#make_mask");
         setFunction(function_dap2_make_mask);
-        //setFunction(function_make_dap4_mask);
+        setFunction(function_dap4_make_mask);
         setVersion("1.0");
     }
     virtual ~MakeMaskFunction()

@@ -42,6 +42,7 @@ private:
     typedef std::vector<unsigned long> Shape;
 
     static void function_dap2_tabular(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp);
+    static libdap::BaseType *function_dap4_tabular(libdap::D4RValueList *args, libdap::DMR &dmr);
 
 #if 0
     static void function_dap2_tabular_2(int argc, libdap::BaseType *argv[], libdap::DDS &, libdap::BaseType **btpp);
@@ -65,6 +66,8 @@ private:
     static void add_index_column(const Shape &indep_shape, const Shape &dep_shape,
             std::vector<libdap::Array*> &dep_vars);
 
+    static libdap::BaseType *tablular_worker(std::vector<libdap::BaseType*> argv);
+
 public:
     TabularFunction()
     {
@@ -74,7 +77,7 @@ public:
         setRole("http://services.opendap.org/dap4/server-side-function/tabular");
         setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions#tabular");
         setFunction(TabularFunction::function_dap2_tabular);
-        // FIXME setFunction(libdap::TabularFunction::function_dap4_tabular);
+        setFunction(TabularFunction::function_dap4_tabular);
         setVersion("1.0");
     }
 

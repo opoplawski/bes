@@ -44,6 +44,8 @@
 
 #include "LinearScaleFunction.h"
 
+#define DEBUG_KEY "function"
+
 using namespace libdap;
 
 namespace functions {
@@ -144,7 +146,7 @@ static double get_missing_value(BaseType *var)
     return get_attribute_double_value(var, "missing_value");
 }
 
-BaseType *function_linear_scale_worker(BaseType *bt, double m, double b, double missing, bool use_missing)
+BaseType *compute_linear_scale_result(BaseType *bt, double m, double b, double missing, bool use_missing)
 {
     // Read the data, scale and return the result. Must replace the new data
     // in a constructor (i.e., Array part of a Grid).
@@ -154,8 +156,8 @@ BaseType *function_linear_scale_worker(BaseType *bt, double m, double b, double 
         // Grab the whole Grid; note that the scaling is done only on the array part
         Grid &source = dynamic_cast<Grid&>(*bt);
 
-        BESDEBUG("function", "function_linear_scale_worker() - Grid send_p: " << source.send_p() << endl);
-        BESDEBUG("function",
+        BESDEBUG(DEBUG_KEY, "function_linear_scale_worker() - Grid send_p: " << source.send_p() << endl);
+        BESDEBUG(DEBUG_KEY,
                 "function_linear_scale_worker() - Grid Array send_p: " << source.get_array()->send_p() << endl);
 
         // Read the grid; set send_p since Grid is a kind of constructor and
@@ -185,8 +187,8 @@ BaseType *function_linear_scale_worker(BaseType *bt, double m, double b, double 
         delete[] data;
 
         // FIXME result->set_send_p(true);
-        BESDEBUG("function", "function_linear_scale_worker() - Grid send_p: " << source.send_p() << endl);
-        BESDEBUG("function",
+        BESDEBUG(DEBUG_KEY, "function_linear_scale_worker() - Grid send_p: " << source.send_p() << endl);
+        BESDEBUG(DEBUG_KEY,
                 "function_linear_scale_worker() - Grid Array send_p: " << source.get_array()->send_p() << endl);
 
         dest = result;
@@ -233,25 +235,13 @@ BaseType *function_linear_scale_worker(BaseType *bt, double m, double b, double 
     return dest;
 }
 
-/** Given a BaseType, scale it using 'y = mx + b'. Either provide the
- constants 'm' and 'b' or the function will look for the COARDS attributes
- 'scale_factor' and 'add_offset'.
+BaseType *linear_scale_worker(vector<BaseType*> argv){
+    int argc = argv.size();
 
- @param argc A count of the arguments
- @param argv An array of pointers to each argument, wrapped in a child of BaseType
- @param btpp A pointer to the return value; caller must delete.
-
- @return The scaled variable, represented using Float64
- @exception Error Thrown if scale_factor is not given and the COARDS
- attributes cannot be found OR if the source variable is not a
- numeric scalar, Array or Grid. */
-void function_dap2_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
-{
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(linear_scale_info);
-        *btpp = response;
-        return;
+        return response;
     }
 
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
@@ -299,11 +289,14 @@ void function_dap2_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **b
         }
     }
 
-    BESDEBUG("function",
-            "function_dap2_linear_scale() - m: " << m << ", b: " << b << ", use_missing: " << use_missing << ", missing: " << missing << endl);
+    BESDEBUG(DEBUG_KEY,
+            "linear_scale_worker() - m: " << m << ", b: " << b << ", use_missing: " << use_missing << ", missing: " << missing << endl);
 
-    *btpp = function_linear_scale_worker(argv[0], m, b, missing, use_missing);
+    return compute_linear_scale_result(argv[0], m, b, missing, use_missing);
 }
+
+
+
 
 /** Given a BaseType, scale it using 'y = mx + b'. Either provide the
  constants 'm' and 'b' or the function will look for the COARDS attributes
@@ -317,68 +310,49 @@ void function_dap2_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **b
  @exception Error Thrown if scale_factor is not given and the COARDS
  attributes cannot be found OR if the source variable is not a
  numeric scalar, Array or Grid. */
-BaseType *function_dap4_linear_scale(D4RValueList *args, DMR &dmr)
+void function_dap2_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    BESDEBUG("function", "function_dap4_linear_scale()  BEGIN " << endl);
+    BESDEBUG(DEBUG_KEY, "function_dap2_linear_scale() - BEGIN" << endl);
 
-    // DAP4 function porting information: in place of 'argc' use 'args.size()'
-    if (args == 0 || args->size() == 0) {
-        Str *response = new Str("info");
-        response->set_value(linear_scale_info);
-        // DAP4 function porting: return a BaseType* instead of using the value-result parameter
-        return response;
+    BESDEBUG(DEBUG_KEY, "function_dap2_linear_scale() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_linear_scale() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
     }
 
-    // Check for 2 arguments
-    DBG(cerr << "args.size() = " << args.size() << endl);
-    if (!(args->size() == 1 || args->size() == 3 || args->size() == 4))
-        throw Error(malformed_expr,
-                "Wrong number of arguments to linear_scale(). See linear_scale() for more information");
+    *btpp = linear_scale_worker(args);
 
-    // Get m & b
-    bool use_missing = false;
-    double m, b, missing = 0.0;
-    if (args->size() == 4) {
-        m = extract_double_value(args->get_rvalue(1)->value(dmr));
-        b = extract_double_value(args->get_rvalue(2)->value(dmr));
-        missing = extract_double_value(args->get_rvalue(3)->value(dmr));
-        use_missing = true;
+    BESDEBUG(DEBUG_KEY, "function_dap2_linear_scale() - END (result: "<< (*btpp)->name() << ")" << endl);
+    return;
+}
+
+/** Given a BaseType, scale it using 'y = mx + b'. Either provide the
+ constants 'm' and 'b' or the function will look for the COARDS attributes
+ 'scale_factor' and 'add_offset'.
+
+
+ @return The scaled variable, represented using Float64
+ @exception Error Thrown if scale_factor is not given and the COARDS
+ attributes cannot be found OR if the source variable is not a
+ numeric scalar, Array or Grid. */
+BaseType *function_dap4_linear_scale(D4RValueList *dvl_args, DMR &dmr)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap4_linear_scale() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_grid() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
     }
-    else if (args->size() == 3) {
-        m = extract_double_value(args->get_rvalue(1)->value(dmr));
-        b = extract_double_value(args->get_rvalue(2)->value(dmr));
-        use_missing = false;
-    }
-    else {
-        m = get_slope(args->get_rvalue(0)->value(dmr));
 
-        // This is really a hack; on a fair number of datasets, the y intercept
-        // is not given and is assumed to be 0. Here the function looks and
-        // catches the error if a y intercept is not found.
-        try {
-            b = get_y_intercept(args->get_rvalue(0)->value(dmr));
-        }
-        catch (Error &e) {
-            b = 0.0;
-        }
+    BaseType *result = linear_scale_worker(args);
 
-        // This is not the best plan; the get_missing_value() function should
-        // do something other than throw, but to do that would require mayor
-        // surgery on get_attribute_double_value().
-        try {
-            missing = get_missing_value(args->get_rvalue(0)->value(dmr));
-            use_missing = true;
-        }
-        catch (Error &e) {
-            use_missing = false;
-        }
-    }
-    BESDEBUG("function",
-            "function_dap4_linear_scale() - m: " << m << ", b: " << b << ", use_missing: " << use_missing << ", missing: " << missing << endl);
+    BESDEBUG(DEBUG_KEY, "function_dap4_grid() - END (result: "<< result->name() << ")" << endl);
+    return result;
 
-    BESDEBUG("function", "function_dap4_linear_scale()  END " << endl);
 
-    return function_linear_scale_worker(args->get_rvalue(0)->value(dmr), m, b, missing, use_missing);
 }
 
 } // namesspace functions

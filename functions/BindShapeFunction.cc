@@ -45,6 +45,8 @@
 
 #include "BindNameFunction.h"
 
+#define DEBUG_KEY "functions"
+
 using namespace std;
 using namespace libdap;
 
@@ -57,8 +59,24 @@ string bind_shape_info =
 
 vector<int> parse_dims(const string &shape); // defined in MakeArrayFunction.cc
 
-BaseType *bind_shape_worker(string shape, BaseType *btp)
+BaseType *bind_shape_worker(vector<BaseType*> argv)
 {
+    int argc = argv.size();
+
+    if (argc == 0) {
+        Str *response = new Str("info");
+        response->set_value(bind_shape_info);
+        return response;
+    }
+
+    // Check for two args
+    if (argc != 2)
+        throw Error(malformed_expr, "bind_shape(shape,variable) requires two arguments.");
+
+    string shape = extract_string_argument(argv[0]);
+
+    BaseType *btp = argv[1];
+
     // string shape = extract_string_argument(argv[0]);
     vector<int> dims = parse_dims(shape);
 
@@ -118,24 +136,21 @@ BaseType *bind_shape_worker(string shape, BaseType *btp)
  * @return The newly (re)named variable.
  * @exception Error Thrown for a variety of errors.
  */
-void function_bind_shape_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+void function_dap2_bind_shape(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    if (argc == 0) {
-        Str *response = new Str("info");
-        response->set_value(bind_shape_info);
-        *btpp = response;
-        return;
+    BESDEBUG(DEBUG_KEY, "function_dap2_bind_shape() - BEGIN" << endl);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_bind_shape() - Building argument vector for geogrid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_bind_shape() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
     }
 
-    // Check for two args or more. The first two must be strings.
-    if (argc != 2) throw Error(malformed_expr, "bind_shape(shape,variable) requires two arguments.");
+    *btpp = bind_shape_worker(args);
 
-    string shape = extract_string_argument(argv[0]);
-
-    BaseType *btp = argv[1];
-
-    *btpp = bind_shape_worker(shape, btp);
-
+    BESDEBUG(DEBUG_KEY, "function_dap2_bind_shape() - END (result: "<< (*btpp)->name() << ")" << endl);
     return;
 }
 
@@ -153,25 +168,20 @@ void function_bind_shape_dap2(int argc, BaseType * argv[], DDS &, BaseType **btp
  * @exception Error Thrown for a variety of errors.
  */
 
-BaseType *function_bind_shape_dap4(D4RValueList *args, DMR &dmr)
+BaseType *function_dap4_bind_shape(D4RValueList *dvl_args, DMR &dmr)
 {
-    // DAP4 function porting information: in place of 'argc' use 'args.size()'
-    if (args == 0 || args->size() == 0) {
-        Str *response = new Str("info");
-        response->set_value(bind_shape_info);
-        // DAP4 function porting: return a BaseType* instead of using the value-result parameter
-        return response;
+    BESDEBUG(DEBUG_KEY, "function_dap4_bind_shape() - Building argument vector for bbox_union_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_bind_shape() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
     }
 
-    // Check for 2 arguments
-    DBG(cerr << "args.size() = " << args.size() << endl);
-    if (args->size() != 2) throw Error(malformed_expr, "bind_shape(shape,variable) requires two arguments.");
+    BaseType *result = bind_shape_worker(args);
 
-    string shape = extract_string_argument(args->get_rvalue(0)->value(dmr));
-
-    BaseType *btp = args->get_rvalue(1)->value(dmr);
-
-    return bind_shape_worker(shape, btp);
+    BESDEBUG(DEBUG_KEY, "function_dap4_bind_shape() - END (result: "<< result->name() << ")" << endl);
+    return result; //response.release();
 }
 
 } // namesspace functions

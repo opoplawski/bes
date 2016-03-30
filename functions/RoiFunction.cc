@@ -50,36 +50,17 @@
 using namespace std;
 using namespace libdap;
 
+#define DEBUG_KEY "roi"
+
+
 namespace functions {
 
-/**
- * @brief Subset the N arrays using index slicing information
- *
- * This function should be called with a series of array variables,
- * each of which are N-dimensions or greater, where the N common
- * dimensions should all be the same size. The intent of this function
- * is that a N-dimensional bounding box, provided in indicial space,
- * will be used to subset each of the arrays. There are other functions
- * that can be used to build these bounding boxes using values of
- * dataset variables - see bbox() and bbox_union(). Taken together,
- * the roi(), bbox() and bbox_union() functions can be used to subset
- * a collection of Arrays where some arrays are taken to be dependent
- * variables and others independent variables. The result is a subset
- * of 'discrete coverage' the collection of independent and dependent
- * variables define.
- *
- * @param argc Argument count
- * @param argv Argument vector - variable in the current DDS
- * @param dds The current DDS
- * @param btpp Value-result parameter for the resulting Array of Structure
- */
-void
-function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+BaseType *roi_worker(vector<BaseType*> argv)
 {
-    const string wrong_args = "Wrong number of arguments to roi(). Expected one or more Arrays and bounding box";
-
+    int argc = argv.size();
     // This is the rank of the Array of Slices, not the N-1 arrays to be sliced
     int rank = 0;
+    const string wrong_args = "Wrong number of arguments to roi(). Expected one or more Arrays and bounding box";
 
     switch (argc) {
     case 0:
@@ -101,7 +82,7 @@ function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     for (int i = 0; i < argc-1; ++i) {
         // cast is safe given the above
         Array *the_array = static_cast<Array*>(argv[i]);
-        BESDEBUG("roi", "the_array: " << the_array->name() << ": " << (void*)the_array << endl);
+        BESDEBUG(DEBUG_KEY, "roi_worker() - the_array: " << the_array->name() << ": " << (void*)the_array << endl);
 
         // For each dimension of the array, apply the slice constraint.
         // Assume Array[]...[][X][Y] where the slice has dims X and Y
@@ -127,7 +108,7 @@ function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
                 throw Error("In function roi(): Dimension name (" + the_array->dimension_name(iter) + ") and slice name (" + name + ") don't match");
 
             // TODO Add stride option?
-            BESDEBUG("roi", "Dimension: " << i << ", Start: " << start << ", Stop: " << stop << endl);
+            BESDEBUG(DEBUG_KEY, "roi_worker() - Dimension: " << i << ", Start: " << start << ", Stop: " << stop << endl);
             the_array->add_constraint(iter, start, 1 /*stride*/, stop);
             --d;
         }
@@ -149,8 +130,48 @@ function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     response->set_send_p(true);
     response->set_read_p(true);
 
-    *btpp = response.release();
+    return response.release();
+
+}
+/**
+ * @brief Subset the N arrays using index slicing information
+ *
+ * This function should be called with a series of array variables,
+ * each of which are N-dimensions or greater, where the N common
+ * dimensions should all be the same size. The intent of this function
+ * is that a N-dimensional bounding box, provided in indicial space,
+ * will be used to subset each of the arrays. There are other functions
+ * that can be used to build these bounding boxes using values of
+ * dataset variables - see bbox() and bbox_union(). Taken together,
+ * the roi(), bbox() and bbox_union() functions can be used to subset
+ * a collection of Arrays where some arrays are taken to be dependent
+ * variables and others independent variables. The result is a subset
+ * of 'discrete coverage' the collection of independent and dependent
+ * variables define.
+ *
+ * @param argc Argument count
+ * @param argv Argument vector - variable in the current DDS
+ * @param dds The current DDS
+ * @param btpp Value-result parameter for the resulting Array of Structure
+ */
+void
+function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap2_roi() - BEGIN" << endl);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_roi() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_roi() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    *btpp = roi_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_roi() - END (result: "<< (*btpp)->name() << ")" << endl);
     return;
+
 }
 
 /**
@@ -162,11 +183,20 @@ function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
  *
  * @see function_dap2_bbox
  */
-BaseType *function_dap4_roi(D4RValueList *, DMR &)
+BaseType *function_dap4_roi(D4RValueList *dvl_args, DMR &dmr)
 {
-    throw Error(malformed_expr, "Not yet implemented for DAP4 functions.");
+    BESDEBUG(DEBUG_KEY, "function_dap4_grid() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_grid() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
 
-    return 0;
+    BaseType *result = roi_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_grid() - END (result: "<< result->name() << ")" << endl);
+    return result;
 }
 
 } // namesspace functions

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="function_results">
+    <Structure name="roi_subset">
+        <Float32 name="Latitude">
+            <Dim size="10"/>
+            <Dim size="10"/>
+            <Attribute name="units" type="String">
+                <Value>degrees_north</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Float32">
+                <Value>-90.00000000</Value>
+                <Value>90.00000000</Value>
+            </Attribute>
+            <Attribute name="_FillValue" type="Float32">
+                <Value>-999.0000000</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>Geodetic Latitude</Value>
+            </Attribute>
+            <Attribute name="Parameter_Type" type="String">
+                <Value>MODIS Input</Value>
+            </Attribute>
+            <Attribute name="Cell_Along_Swath_Sampling" type="Int32">
+                <Value>5</Value>
+                <Value>2025</Value>
+                <Value>10</Value>
+            </Attribute>
+            <Attribute name="Cell_Across_Swath_Sampling" type="Int32">
+                <Value>5</Value>
+                <Value>1345</Value>
+                <Value>10</Value>
+            </Attribute>
+            <Attribute name="Geolocation_Pointer" type="String">
+                <Value>Geolocation data not applicable</Value>
+            </Attribute>
+            <Attribute name="DAP4_Checksum_CRC32" type="String">
+                <Value>966590e2</Value>
+            </Attribute>
+        </Float32>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>39368966</Value>
+        </Attribute>
+    </Structure>
+</Dataset>
+
+The data:
+Structure {
+    Float32 Latitude[10][10];
+} roi_subset = { {{-86, -56.61, -90.17, 99.38, 81.67, 10.59, 91.29, 45.2, -99.97, -86},{-56.61, -90.17, 99.38, 81.67, 10.59, 91.29, 45.2, -99.97, -86, -56.61},{-90.17, 99.38, 81.67, 10.59, 91.29, 45.2, -99.97, -86, -56.61, -90.17},{99.38, 81.67, 10.59, 91.29, 45.2, -99.97, -86, -56.61, -90.17, 99.38},{81.67, 10.59, 91.29, 45.2, -99.97, -86, -56.61, -90.17, 99.38, 81.67},{10.59, 91.29, 45.2, -99.97, -86, -56.61, -90.17, 99.38, 81.67, 10.59},{91.29, 45.2, -99.97, -86, -56.61, -90.17, 99.38, 81.67, 10.59, 91.29},{45.2, -99.97, -86, -56.61, -90.17, 99.38, 81.67, 10.59, 91.29, 45.2},{-99.97, -86, -56.61, -90.17, 99.38, 81.67, 10.59, 91.29, 45.2, -99.97},{-86, -56.61, -90.17, 99.38, 81.67, 10.59, 91.29, 45.2, -99.97, -86}} };
+

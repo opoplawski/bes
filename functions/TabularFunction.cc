@@ -42,11 +42,16 @@
 #include <util.h>
 #include <ServerFunctionsList.h>
 
+#include <D4RValue.h>
+#include <BESDebug.h>
+
 #include "TabularSequence.h"
 #include "TabularFunction.h"
 
 using namespace std;
 using namespace libdap;
+
+#define DEBUG_KEY "functions"
 
 namespace functions {
 
@@ -344,34 +349,9 @@ void TabularFunction::add_index_column(const Shape &indep_shape, const Shape &de
     dep_vars.insert(dep_vars.begin(), a);
 }
 
-/**
- * @brief Transform one or more arrays to a sequence.
- *
- * This function will transform one or more arrays into a sequence,
- * where each array becomes a column in the sequence, with one
- * exception. If each array has the same shape, then the number of
- * columns in the resulting table is the same as the number of arrays.
- * If one or more arrays has more dimensions than the others, an
- * extra column is added for each of those extra dimensions. Arrays
- * are enumerated in row-major order (the right-most dimension varies
- * fastest).
- *
- * It's assumed that for each of the arrays, elements (i0, i1, ..., in)
- * are all related. The function makes no test to ensure that, however.
- *
- * @note While this version of tabular() will work when some arrays
- * have more dimensions than others, the collection of arrays must have
- * shapes that 'fit together'.
- *
- * @todo Write better documentation about the differing dimensions
- *
- * @param argc Argument count
- * @param argv Argument vector - variable in the current DDS
- * @param dds The current DDS
- * @param btpp Value-result parameter for the resulting Sequence
- */
-void TabularFunction::function_dap2_tabular(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
 {
+    int argc = argv.size();
     vector<Array*> the_arrays;
     // collect all of the arrays; separates them from other kinds of parameters
     for (int n = 0; n < argc; ++n) {
@@ -472,9 +452,75 @@ void TabularFunction::function_dap2_tabular(int argc, BaseType *argv[], DDS &, B
     response->set_value(result);
     response->set_read_p(true);
 
-    *btpp = response.release();
+    return response.release();
+
+}
+
+
+/**
+ * @brief Transform one or more arrays to a sequence.
+ *
+ * This function will transform one or more arrays into a sequence,
+ * where each array becomes a column in the sequence, with one
+ * exception. If each array has the same shape, then the number of
+ * columns in the resulting table is the same as the number of arrays.
+ * If one or more arrays has more dimensions than the others, an
+ * extra column is added for each of those extra dimensions. Arrays
+ * are enumerated in row-major order (the right-most dimension varies
+ * fastest).
+ *
+ * It's assumed that for each of the arrays, elements (i0, i1, ..., in)
+ * are all related. The function makes no test to ensure that, however.
+ *
+ * @note While this version of tabular() will work when some arrays
+ * have more dimensions than others, the collection of arrays must have
+ * shapes that 'fit together'.
+ *
+ * @todo Write better documentation about the differing dimensions
+ *
+ * @param argc Argument count
+ * @param argv Argument vector - variable in the current DDS
+ * @param dds The current DDS
+ * @param btpp Value-result parameter for the resulting Sequence
+ */
+void TabularFunction::function_dap2_tabular(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap2_tabular() - BEGIN" << endl);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_tabular() - Building argument vector for tablular_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_tabular() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    *btpp = tablular_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_tabular() - END (result: "<< (*btpp)->name() << ")" << endl);
     return;
 }
+
+
+BaseType *TabularFunction::function_dap4_tabular(D4RValueList *dvl_args, DMR &dmr){
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - Building argument vector for tablular_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    BaseType *result = tablular_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - END (result: "<< result->name() << ")" << endl);
+    return result;
+
+}
+
+
+
 
 #if 0
 

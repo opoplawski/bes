@@ -53,6 +53,7 @@
 #include <util.h>
 
 #include <BaseTypeFactory.h>
+#include <D4BaseTypeFactory.h>
 
 #include <BESDebug.h>
 
@@ -68,7 +69,70 @@ string make_array_info =
                 + "<function name=\"make_array\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#make_array\">\n"
                 + "</function>";
 
-bool isValidTypeMatch(Type requestedType, Type argType)
+bool isDap4TypeMatch(Type requestedType, Type argType)
+{
+    bool typematch_status = false;
+    switch (requestedType) {
+    case dods_byte_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c: {
+        // All integer values are stored in Int64 DAP variables by the stock argument parser
+        // except values too large; those are stored in a UInt64 these return the same size value
+        switch (argType) {
+        case dods_int64_c:
+        case dods_uint64_c: {
+            typematch_status = true;
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    }
+
+    case dods_float32_c:
+    case dods_float64_c: {
+        // All floating point values are stored as Float64 by the stock argument parser
+        switch (argType) {
+        case dods_float64_c: {
+            typematch_status = true;
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    }
+
+    case dods_str_c:
+    case dods_url_c: {
+        // Strings and Urls, like Int32 and UInt32 are pretty much the same
+        switch (argType) {
+        case dods_str_c:
+        case dods_url_c: {
+            typematch_status = true;
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    }
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown type error");
+    }
+
+    return typematch_status;
+}
+
+bool isDap2TypeMatch(Type requestedType, Type argType)
 {
     bool typematch_status = false;
     switch (requestedType) {
@@ -77,8 +141,8 @@ bool isValidTypeMatch(Type requestedType, Type argType)
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c: {
-        // All integer values are stored in Int32 DAP variables by the stock argument parser
-        // except values too large; those are stored in a UInt32 these return the same size value
+        // All integer values are stored in Int64 DAP variables by the stock argument parser
+        // except values too large; those are stored in a UInt64 these return the same size value
         switch (argType) {
         case dods_int32_c:
         case dods_uint32_c: {
@@ -135,12 +199,12 @@ static void read_values(int argc, BaseType *argv[], Array *dest)
 
     string requestedTypeName = extract_string_argument(argv[0]);
     Type requestedType = libdap::get_type(requestedTypeName.c_str());
-    BESDEBUG("functions", "Requested array type: " << requestedTypeName<< endl);
+    BESDEBUG("functions", "Requested array type: " << requestedTypeName << endl);
 
     // read argv[2]...argv[2+N-1] elements, convert them to type an load them in the Array.
     for (int i = 2; i < argc; ++i) {
         BESDEBUG("functions", "Adding value of type " << argv[i]->type_name() << endl);
-        if (!isValidTypeMatch(requestedType, argv[i]->type())) {
+        if (!isDap2TypeMatch(requestedType, argv[i]->type())) {
             throw Error(malformed_expr,
                     "make_array(): Expected values to be of type " + requestedTypeName + " but argument "
                             + long_to_string(i) + " evaluated into a type " + argv[i]->type_name() + " instead.");
@@ -169,7 +233,7 @@ static void read_values(D4RValueList *args, DMR &dmr, Array *dest)
     for (unsigned int i = 2; i < args->size(); ++i) {
 
         BESDEBUG("functions", "Adding value of type " << args->get_rvalue(i)->value(dmr)->type_name() << endl);
-        if (!isValidTypeMatch(requestedType, args->get_rvalue(i)->value(dmr)->type())) {
+        if (!isDap4TypeMatch(requestedType, args->get_rvalue(i)->value(dmr)->type())) {
             throw Error(malformed_expr,
                     "make_array(): Expected values to be of type " + requestedTypeName + " but argument "
                             + long_to_string(i) + " evaluated into a type "
@@ -324,8 +388,8 @@ BaseType *function_make_dap4_array(D4RValueList *args, DMR &dmr)
     string requested_type_name = extract_string_argument(args->get_rvalue(0)->value(dmr));
     string shape = extract_string_argument(args->get_rvalue(1)->value(dmr));
 
-    BESDEBUG("functions", "type: " << requested_type_name << endl);
-    BESDEBUG("functions", "shape: " << shape << endl);
+    BESDEBUG("functions", "function_make_dap4_array() - type: " << requested_type_name << endl);
+    BESDEBUG("functions", "function_make_dap4_array() - shape: " << shape << endl);
 
     // get the DAP type; NB: In DAP4 this will include Url4 and Enum
     Type requested_type = libdap::get_type(requested_type_name.c_str());
@@ -345,8 +409,8 @@ BaseType *function_make_dap4_array(D4RValueList *args, DMR &dmr)
     } while (dmr.root()->var(name));
 
     Array *dest = new Array(name, 0);	// The ctor for Array copies the prototype pointer...
-    BaseTypeFactory btf;
-    dest->add_var_nocopy(btf.NewVariable(requested_type));	// ... so use add_var_nocopy() to add it instead
+    D4BaseTypeFactory btf;
+    dest->add_var_nocopy(btf.NewVariable(requested_type,name));	// ... so use add_var_nocopy() to add it instead
 
     unsigned long number_of_elements = 1;
     vector<int>::iterator i = dims.begin();
@@ -361,6 +425,8 @@ BaseType *function_make_dap4_array(D4RValueList *args, DMR &dmr)
         throw Error(malformed_expr,
                 "make_array(): Expected " + long_to_string(number_of_elements) + " parameters but found "
                         + long_to_string(args->size() - 2) + " instead.");
+
+
 
     switch (requested_type) {
     // All integer values are stored in Int32 DAP variables by the stock argument parser
@@ -400,6 +466,22 @@ BaseType *function_make_dap4_array(D4RValueList *args, DMR &dmr)
 
     case dods_url_c:
         read_values<string, Url>(args, dmr, dest);
+        break;
+
+    case dods_char_c:   // DAP4 (a synonym for UInt8 and Byte)
+        read_values<dods_byte, Int32>(args, dmr, dest);
+        break;
+    case dods_int8_c:   // DAP4
+        read_values<dods_int8, Int32>(args, dmr, dest);
+        break;
+    case dods_uint8_c:  // DAP4
+        read_values<dods_byte, Int32>(args, dmr, dest);
+        break;
+    case dods_int64_c:  // DAP4
+        read_values<dods_int64, Int32>(args, dmr, dest);
+        break;
+    case dods_uint64_c: // DAP4
+        read_values<dods_uint64, Int32>(args, dmr, dest);
         break;
 
     default:

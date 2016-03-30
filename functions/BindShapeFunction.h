@@ -33,8 +33,8 @@ class DDS;
 
 namespace functions {
 
-void function_bind_shape_dap2(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp) ;
-libdap::BaseType *function_bind_shape_dap4(libdap::D4RValueList *args, libdap::DMR &dmr);
+void function_dap2_bind_shape(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp) ;
+libdap::BaseType *function_dap4_bind_shape(libdap::D4RValueList *args, libdap::DMR &dmr);
 
 class BindShapeFunction: public libdap::ServerFunction {
 public:
@@ -45,8 +45,8 @@ public:
 		setUsageString("bind_shape(shape,variable)");
 		setRole("http://services.opendap.org/dap4/server-side-function/bind_shape");
 		setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions#bind_shape");
-		setFunction(function_bind_shape_dap2);
-		setFunction(function_bind_shape_dap4);
+		setFunction(function_dap2_bind_shape);
+		setFunction(function_dap4_bind_shape);
 		setVersion("1.0");
     }
     virtual ~BindShapeFunction()

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="function_results">
+    <UInt16 name="g1">
+        <Dim size="8"/>
+        <Dim size="8"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>b615106f</Value>
+        </Attribute>
+    </UInt16>
+</Dataset>
+
+The data:
+UInt16 g1[8][8] = {{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8},{1, 2, 3, 4, 5, 6, 7, 8}};
+

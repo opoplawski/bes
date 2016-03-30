@@ -41,12 +41,9 @@
 #include <Error.h>
 #include <DDS.h>
 
-#if 0
-// No DAP4 support yet...
 #include <DMR.h>
 #include <D4Group.h>
 #include <D4RValue.h>
-#endif
 
 #include <debug.h>
 #include <util.h>
@@ -56,6 +53,8 @@
 #include "MakeMaskFunction.h"
 #include "Odometer.h"
 #include "functions_util.h"
+
+#define DEBUG_KEY "functions"
 
 using namespace libdap;
 using namespace std;
@@ -213,13 +212,14 @@ void make_mask_helper(const vector<Array*> dims, Array *tuples, vector<dods_byte
  @return The mask variable, represented using Byte
  @exception Error Thrown if target variable is not a DAP2 Grid
  **/
-void function_dap2_make_mask(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+BaseType *make_mask_worker(vector<BaseType *> argv)
 {
+
+    int argc = argv.size();
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(make_mask_info);
-        *btpp = response;
-        return;
+        return response;
     }
 
     // Check for three args or more. The first two must be strings.
@@ -325,7 +325,44 @@ void function_dap2_make_mask(int argc, BaseType * argv[], DDS &, BaseType **btpp
 
     dest->set_read_p(true);
 
-    *btpp = dest;
+    return dest;
+}
+
+void function_dap2_make_mask(int argc, libdap::BaseType *argv[], libdap::DDS &, libdap::BaseType **btpp){
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - BEGIN" << endl);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - Building argument vector for grid_worker()" << endl);
+    vector<BaseType*> args;
+    for(int i=0; i< argc; i++){
+        BaseType * bt = argv[i];
+        BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    *btpp = make_mask_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap2_make_mask() - END (result: "<< (*btpp)->name() << ")" << endl);
+    return;
+
+}
+
+
+BaseType *function_dap4_make_mask(D4RValueList *dvl_args, DMR &dmr){
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_make_mask() - Building argument vector for make_mask_worker()" << endl);
+    vector<BaseType*> args;
+    for(unsigned int i=0; i< dvl_args->size(); i++){
+        BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
+        BESDEBUG(DEBUG_KEY, "function_dap4_make_mask() - Adding argument: "<< bt->name() << endl);
+        args.push_back(bt);
+    }
+
+    BaseType *result = make_mask_worker(args);
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_make_mask() - END (result: "<< result->name() << ")" << endl);
+    return result;
+
 }
 
 } // namespace functions

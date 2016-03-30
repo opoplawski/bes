@@ -41,6 +41,7 @@
 #include <util.h>
 #include <ServerFunctionsList.h>
 
+#include <BESInternalError.h>
 #include <BESDebug.h>
 
 #include "BBoxFunction.h"
@@ -53,58 +54,30 @@
 // jhrg 3/2/15
 #define UNWIND_BBOX_CODE 1
 
+#define DEBUG_KEY "functions"
+
 using namespace std;
 using namespace libdap;
 
 namespace functions {
 
-/**
- * @brief Return the bounding box for an array
- *
- * Given an N-dimensional Array of simple numeric types and two
- * minimum and maximum values, return the indices of a N-dimensional
- * bounding box. The indices are returned using an Array of
- * Structure, where each element of the array holds the name,
- * start index and stop index in fields with those names.
- *
- * It is up to the caller to make use of the returned values; the
- * array is not modified in any way other than to read in it's
- * values (and set the variable's read_p property).
- *
- * The returned Structure Array has the same name as the variable
- * it applies to, so that error messages can reference the source
- * variable.
- *
- * @note There are both DAP2 and DAP4 versions of this function.
- *
- * @param argc Argument count
- * @param argv Argument vector - variable in the current DDS
- * @param dds The current DDS
- * @param btpp Value-result parameter for the resulting Array of Structure
- */
-void
-function_dap2_bbox(int argc, BaseType *argv[], DDS &, BaseType **btpp)
-{
-    const string wrong_args = "Wrong number of arguments to bbox(). Expected an Array and minimum and maximum values (3 arguments)";
 
-    switch (argc) {
-    case 0:
-        throw Error(malformed_expr, wrong_args);
-    case 3:
-        // correct number of args
-        break;
-    default:
-        throw Error(malformed_expr, wrong_args);
-    }
-
-    if (argv[0] && argv[0]->type() != dods_array_c)
-        throw Error("In function bbox(): Expected argument 1 to be an Array.");
-    if (!argv[0]->var()->is_simple_type() || argv[0]->var()->type() == dods_str_c || argv[0]->var()->type() == dods_url_c)
-        throw Error("In function bbox(): Expected argument 1 to be an Array of numeric types.");
+Array *bbox_worker(BaseType *array_arg, BaseType *min_value_arg, BaseType *max_value_arg){
 
     // cast is safe given the above
-    Array *the_array = static_cast<Array*>(argv[0]);
-    BESDEBUG("bbox", "the_array: " << the_array->name() << ": " << (void*)the_array << endl);
+    Array *the_array = dynamic_cast<Array*>(array_arg);
+    if(the_array==0){
+        throw Error("In function bbox_worker(): Expected argument 1 to be an Array.");
+    }
+    if (!the_array->var()->is_simple_type() || the_array->var()->type() == dods_str_c || the_array->var()->type() == dods_url_c)
+        throw Error("In function bbox_worker(): Expected argument 1 to be an Array of numeric types.");
+
+    BESDEBUG(DEBUG_KEY, "bbox_worker() - the_array: " << the_array->name() << ": " << (void*)the_array << endl);
+
+    double min_value = extract_double_value(min_value_arg);
+    double max_value = extract_double_value(max_value_arg);
+
+
 
     // Read the variable into memory
     the_array->read();
@@ -113,9 +86,6 @@ function_dap2_bbox(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     // Get the values as doubles
     vector<double> the_values;
     extract_double_array(the_array, the_values); // This function sets the size of the_values
-
-    double min_value = extract_double_value(argv[1]);
-    double max_value = extract_double_value(argv[2]);
 
     // Build the response
     unsigned int rank = the_array->dimensions();
@@ -273,7 +243,50 @@ function_dap2_bbox(int argc, BaseType *argv[], DDS &, BaseType **btpp)
     response->set_read_p(true);
     response->set_send_p(true);
 
-    *btpp = response.release();
+    return response.release();
+
+}
+
+
+/**
+ * @brief Return the bounding box for an array
+ *
+ * Given an N-dimensional Array of simple numeric types and two
+ * minimum and maximum values, return the indices of a N-dimensional
+ * bounding box. The indices are returned using an Array of
+ * Structure, where each element of the array holds the name,
+ * start index and stop index in fields with those names.
+ *
+ * It is up to the caller to make use of the returned values; the
+ * array is not modified in any way other than to read in it's
+ * values (and set the variable's read_p property).
+ *
+ * The returned Structure Array has the same name as the variable
+ * it applies to, so that error messages can reference the source
+ * variable.
+ *
+ * @note There are both DAP2 and DAP4 versions of this function.
+ *
+ * @param argc Argument count
+ * @param argv Argument vector - variable in the current DDS
+ * @param dds The current DDS
+ * @param btpp Value-result parameter for the resulting Array of Structure
+ */
+void
+function_dap2_bbox(int argc, BaseType *argv[], DDS &, BaseType **btpp)
+{
+    BESDEBUG(DEBUG_KEY, "function_dap2_bbox() - BEGIN" << endl);
+    const string wrong_args = "function_dap2_bbox() - Wrong number of arguments to bbox(). Expected an Array and minimum and maximum values (3 arguments)";
+
+    if (argc != 3) {
+        throw Error(malformed_expr, wrong_args);
+    }
+    BaseType *the_array = argv[0];
+    BaseType *min_value = argv[1];
+    BaseType *max_value = argv[2];
+
+    *btpp = bbox_worker(the_array, min_value, max_value);
+    BESDEBUG(DEBUG_KEY, "function_dap2_bbox() - END" << endl);
     return;
 }
 
@@ -288,11 +301,36 @@ function_dap2_bbox(int argc, BaseType *argv[], DDS &, BaseType **btpp)
  *
  * @see function_dap2_bbox
  */
-BaseType *function_dap4_bbox(D4RValueList * /* args */, DMR & /* dmr */)
+BaseType *function_dap4_bbox(D4RValueList *args, DMR &dmr)
 {
-    throw Error(malformed_expr, "Not yet implemented for DAP4 functions.");
+    BESDEBUG(DEBUG_KEY, "function_dap4_bbox() - BEGIN" << endl);
+    const string wrong_args = "function_dap4_bbox() - Wrong number of arguments to bbox(). Expected an Array and minimum and maximum values (3 arguments)";
 
-    return 0; //response.release();
+    if(args->size() != 3) {
+        throw Error(malformed_expr, wrong_args);
+    }
+    BaseType *the_array = args->get_rvalue(0)->value(dmr);
+    BaseType *min_value = args->get_rvalue(1)->value(dmr);
+    BaseType *max_value = args->get_rvalue(2)->value(dmr);
+
+    Array *bbox =  bbox_worker(the_array, min_value, max_value);
+
+
+#if 0
+    vector<BaseType *> one_dim_bboxes =  bbox->get_compound_buf();
+    for(unsigned long i=0; i<one_dim_bboxes.size(); i++){
+        Structure *oneD_bbox = dynamic_cast<Structure*>(one_dim_bboxes[i]);
+        if(oneD_bbox==NULL){
+            throw new BESInternalError("The bbox_worker function returned some thing other than a Structure! That's a big problem!", __FILE__, __LINE__);
+        }
+
+        BESDEBUG(DEBUG_KEY, "function_dap4_bbox() - one_dim_bboxes["<< i <<"] name: " << oneD_bbox->name() << endl);
+
+    }
+#endif
+
+    BESDEBUG(DEBUG_KEY, "function_dap4_bbox() - END" << endl);
+    return bbox;
 }
 
 } // namesspace functions
