@@ -2,6 +2,9 @@
 
 m4_include([handler_tests_macros.m4])
 
+##############################################################################
+# DAP2 Function Tests 
+
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/tabular_0.dods.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/tabular_1.dods.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/tabular_2.dods.bescmd)
@@ -106,16 +109,10 @@ AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/bind_shape_test_6.dods.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/bind_shape_test_7.dods.bescmd)
 
 
-# DAP4 functions - these use the 'functions' keyword
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func1.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func2.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func3.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func4.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func5.bescmd])
 
 
-
-# DAP4 Tests 
+##############################################################################
+# DAP4 Function Tests 
 
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST(dap4/bbox_0.dap.bescmd)
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST(dap4/bbox_1.dap.bescmd)
@@ -189,6 +186,12 @@ AT_BESCMD_BINARY_DAP4_RESPONSE_TEST(dap4/test_coads.dap.bescmd)
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST(dap4/versionFunction.dap.bescmd)
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST(dap4/versionFunction.dmr.bescmd)
 
+AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_1.bescmd])
+AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_2.bescmd])
+AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_3.bescmd])
+AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_4.bescmd])
+AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_5.bescmd])
+AT_WHAT_HAPPENS_IF_THERES_NO_SUCH_MACRO([functions/test_array_1.xml.dap.func5.bescmd])
 
 
 
