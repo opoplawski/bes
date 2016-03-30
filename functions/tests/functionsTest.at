@@ -34,8 +34,6 @@ AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/roi_5.dods.bescmd)
 
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/mask_array_data_dap2_1.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/mask_array_data_dap2_2.bescmd)
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([bescmd/mask_array_data_dap4_1.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([bescmd/mask_array_data_dap4_2.bescmd])
 
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/make_mask_coads_1.bescmd)
 # This test is broken: rearrange coadsx and coadsy to match the correct order
@@ -45,17 +43,6 @@ AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/make_mask_coads_2.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/dilate_mask_dap2_1.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/dilate_mask_dap2_2.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/dilate_mask_dap2_3.bescmd)
-
-AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([bescmd/dap4_dilate_mask_1.bescmd])
-AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([bescmd/dap4_dilate_mask_2.bescmd])
-AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([bescmd/dap4_dilate_mask_3.bescmd])
-
-# DAP4 functions - these use the 'functions' keyword
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func1.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func2.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func3.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func4.bescmd])
-AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func5.bescmd])
 
 
 # AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/mask_coads_data_dap2_1.bescmd)
@@ -118,6 +105,13 @@ AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/bind_shape_test_5.dods.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/bind_shape_test_6.dods.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(bescmd/bind_shape_test_7.dods.bescmd)
 
+
+# DAP4 functions - these use the 'functions' keyword
+AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func1.bescmd])
+AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func2.bescmd])
+AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func3.bescmd])
+AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func4.bescmd])
+AT_BESCMD_DAP_FUNCTION_RESPONSE_TEST([functions/test_array_1.xml.dap.func5.bescmd])
 
 
 
