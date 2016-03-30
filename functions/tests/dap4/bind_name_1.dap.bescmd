@@ -9,7 +9,7 @@
   
   <bes:define name="d1">
     <bes:container name="c">
-        <dap4function>bind_name()</dap4function>
+        <bes:dap4function>bind_name()</bes:dap4function>
     </bes:container>
   </bes:define>
   

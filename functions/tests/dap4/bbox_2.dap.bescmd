@@ -9,7 +9,7 @@
   
   <bes:define name="d1" space="default">
     <bes:container name="c">
-        <dap4function>bbox(Longitude,20,150)</dap4function>
+        <bes:dap4function>bbox(Longitude,20,150)</bes:dap4function>
     </bes:container>
   </bes:define>
   
