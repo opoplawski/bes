@@ -191,7 +191,7 @@ AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_2.bescmd])
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_3.bescmd])
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_4.bescmd])
 AT_BESCMD_BINARY_DAP4_RESPONSE_TEST([dap4/test_array_1_func_5.bescmd])
-AT_WHAT_HAPPENS_IF_THERES_NO_SUCH_MACRO([functions/test_array_1.xml.dap.func5.bescmd])
+AT_NOTHING_BAD_HAPPENS_IF_THERES_NO_SUCH_MACRO([functions/test_array_1.xml.dap.func5.bescmd])
 
 
 
