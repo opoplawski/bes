@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="function_results">
+    <String name="g1">
+        <Dim size="1"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>f7366f35</Value>
+        </Attribute>
+    </String>
+    <String name="g2">
+        <Dim size="2"/>
+        <Dim size="3"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>fe356205</Value>
+        </Attribute>
+    </String>
+    <URL name="g3">
+        <Dim size="2"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>71a4a188</Value>
+        </Attribute>
+    </URL>
+</Dataset>
+
+The data:
+String g1[1] = {"1.0"};
+String g2[2][3] = {{"1.0", "test", "test and set"},{"2.0", "TEST", "TEST and SET"}};
+URL g3[2] = {"http://opendap.org", "http::/google.com"};
+
