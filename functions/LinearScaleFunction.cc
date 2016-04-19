@@ -163,7 +163,7 @@ static double get_attribute_double_value(BaseType *var, const string &attribute)
     }
     else {
         AttrTable &attr = var->get_attr_table();
-        string attribute_value = attr.get_attr(attribute);
+        attribute_value = attr.get_attr(attribute);
         BESDEBUG(DEBUG_KEY, "get_attribute_double_value() - Using DAP2 attribute: '"<< attribute << "' value: " << attribute_value << endl);
     }
 
@@ -379,7 +379,8 @@ void function_dap2_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **b
     vector<BaseType*> args;
     for(int i=0; i< argc; i++){
         BaseType * bt = argv[i];
-        BESDEBUG(DEBUG_KEY, "function_dap2_linear_scale() - BaseType Retrieved from DDS: "<< *bt << endl);
+        BESDEBUG(DEBUG_KEY, "function_dap4_linear_scale() - Adding argument: "<< bt->name() << endl);
+        //BESDEBUG(DEBUG_KEY, "function_dap2_linear_scale() - BaseType Retrieved from DDS: "<< *bt << endl);
         args.push_back(bt);
     }
 
@@ -408,7 +409,7 @@ BaseType *function_dap4_linear_scale(D4RValueList *dvl_args, DMR &dmr)
     for(unsigned int i=0; i< dvl_args->size(); i++){
         BaseType * bt = dvl_args->get_rvalue(i)->value(dmr);
         BESDEBUG(DEBUG_KEY, "function_dap4_linear_scale() - Adding argument: "<< bt->name() << endl);
-        BESDEBUG(DEBUG_KEY, "function_dap4_linear_scale() - BaseType Retrieved from DDS: "<< *bt << endl);
+        //BESDEBUG(DEBUG_KEY, "function_dap4_linear_scale() - BaseType Retrieved from DDS: "<< *bt << endl);
         args.push_back(bt);
         bt = dmr.root()->var(bt->name());
     }

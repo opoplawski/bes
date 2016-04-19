@@ -27,6 +27,8 @@
 #include "Str.h"
 #include "BaseType.h"
 #include "DDS.h"
+#include "DMR.h"
+#include "D4Group.h"
 #include "DapFunctionUtils.h"
 #include "Structure.h"
 #include "BESDebug.h"
@@ -243,3 +245,24 @@ void wrapitup(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::Base
 
     BESDEBUG(DEBUG_KEY, "DFU::wrapitup() - END" << endl);
 }
+
+
+
+
+void resolve_dimensions(libdap::DMR &dmr, libdap::Constructor *c){
+
+    libdap::D4Group *rootGroup = dmr.root();
+    libdap::D4Dimensions *dims = rootGroup->dims();
+
+    for(libdap::D4Dimensions::D4DimensionsIter d4dit = dims->dim_begin(); d4dit != dims->dim_end() ; ++d4dit){
+
+    }
+
+
+
+
+
+
+
+}
+
