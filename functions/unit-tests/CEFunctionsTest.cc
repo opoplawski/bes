@@ -139,7 +139,7 @@ public:
 
 CPPUNIT_TEST_SUITE( CEFunctionsTest );
 
-    // Test void projection_function_grid(int argc, BaseType *argv[], DDS &dds)
+    // Test void projection_function_dap2_grid(int argc, BaseType *argv[], DDS &dds)
 
     CPPUNIT_TEST(no_arguments_test);
     CPPUNIT_TEST(one_argument_test);
@@ -180,7 +180,7 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
     {
         try {
             BaseType *btp = 0;
-            function_grid(0, 0, *dds, &btp);
+            function_dap2_grid(0, 0, *dds, &btp);
             CPPUNIT_ASSERT(true);
         }
         catch (Error &e) {
@@ -196,7 +196,7 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
             BaseType *btp = 0;
-            function_grid(1, argv, *dds, &btp);
+            function_dap2_grid(1, argv, *dds, &btp);
             CPPUNIT_ASSERT("one_argument_not_a_grid_test() should work");
         }
         catch (Error &e) {
@@ -212,7 +212,7 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             argv[0] = dds->var("lat");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this, although it is not a grid");
             BaseType *btp = 0;
-            function_grid(1, argv, *dds, &btp);
+            function_dap2_grid(1, argv, *dds, &btp);
             CPPUNIT_ASSERT(!"one_argument_not_a_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -232,7 +232,7 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             BaseType *btp = 0;
-            function_grid(2, argv, *dds, &btp);
+            function_dap2_grid(2, argv, *dds, &btp);
             CPPUNIT_ASSERT(!"map_not_in_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -253,7 +253,7 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
             BaseType *btp = 0;
-            function_grid(2, argv, *dds, &btp);
+            function_dap2_grid(2, argv, *dds, &btp);
             Grid &g = dynamic_cast<Grid&>(*btp);
 
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
@@ -284,12 +284,12 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[2])->val2buf(&expression);
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
-            //function_grid(3, argv, *dds);
+            //function_dap2_grid(3, argv, *dds);
             BaseType *btp = 0;
-            function_grid(3, argv, *dds, &btp);
+            function_dap2_grid(3, argv, *dds, &btp);
             Grid &g = dynamic_cast<Grid&>(*btp);
 
-            //Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
+            //Grid &g = dynamic_cast<Grid&>(*function_dap2_grid(3, argv, *dds));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 4);
@@ -313,11 +313,11 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
             BaseType *btp = 0;
-            function_grid(2, argv, *dds, &btp);
+            function_dap2_grid(2, argv, *dds, &btp);
             Grid &g = dynamic_cast<Grid&>(*btp);
 
-            //function_grid(2, argv, *dds);
-            //Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds));
+            //function_dap2_grid(2, argv, *dds);
+            //Grid &g = dynamic_cast<Grid&>(*function_dap2_grid(2, argv, *dds));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
@@ -347,11 +347,11 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
             BaseType *btp = 0;
-            function_grid(3, argv, *dds, &btp);
+            function_dap2_grid(3, argv, *dds, &btp);
             Grid &g = dynamic_cast<Grid&>(*btp);
 
-            //function_grid(3, argv, *dds);
-            //Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
+            //function_dap2_grid(3, argv, *dds);
+            //Grid &g = dynamic_cast<Grid&>(*function_dap2_grid(3, argv, *dds));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
@@ -375,10 +375,10 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
             BaseType *btp = 0;
-            function_grid(2, argv, *dds, &btp);
+            function_dap2_grid(2, argv, *dds, &btp);
             //Grid &g = dynamic_cast<Grid&>(*btp);
 
-            // function_grid(2, argv, *dds);
+            // function_dap2_grid(2, argv, *dds);
 
             CPPUNIT_ASSERT(!"one_dim_grid_noninclusive_values_test() should not have worked");
         }
@@ -401,10 +401,10 @@ CPPUNIT_TEST_SUITE( CEFunctionsTest );
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
             BaseType *btp = 0;
-            function_grid(2, argv, *dds, &btp);
+            function_dap2_grid(2, argv, *dds, &btp);
             //Grid &g = dynamic_cast<Grid&>(*btp);
 
-            // function_grid(2, argv, *dds);
+            // function_dap2_grid(2, argv, *dds);
 
             CPPUNIT_ASSERT(!"values_outside_map_range_test() should not have worked");
         }

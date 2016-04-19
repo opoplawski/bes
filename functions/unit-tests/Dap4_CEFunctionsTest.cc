@@ -220,7 +220,8 @@ CPPUNIT_TEST_SUITE( Dap4_CEFunctionsTest );
     {
         DBG(cerr << "linear_scale_args_test() - BEGIN " << endl);
         try {
-            function_dap4_linear_scale(0, *two_arrays_dmr);
+            D4RValueList params;
+           function_dap4_linear_scale(&params, *two_arrays_dmr);
             CPPUNIT_ASSERT(true);
         }
         catch (Error &e) {
@@ -542,7 +543,7 @@ CPPUNIT_TEST_SUITE( Dap4_CEFunctionsTest );
 
             DBG(cerr << "bind_shape_test() - Calling function_bind_shape_dap4()" << endl);
 
-            BaseType *result = function_bind_shape_dap4(&params, *two_arrays_dmr);
+            BaseType *result = function_dap4_bind_shape(&params, *two_arrays_dmr);
             DBG(cerr << "bind_shape_test() - function_bind_shape_dap4() returned an " << result->type_name() << endl);
 
             CPPUNIT_ASSERT(result->type() == dods_array_c);
@@ -559,7 +560,7 @@ CPPUNIT_TEST_SUITE( Dap4_CEFunctionsTest );
             p = resultArray->dim_begin();
             int i = 0;
             while (p != resultArray->dim_end()) {
-                CPPUNIT_ASSERT(resultArray->dimension_size(p, true) == dims[i]);
+                CPPUNIT_ASSERT(resultArray->dimension_size(p, true) == (int)(dims[i]));
                 DBG(
                         cerr << "bind_shape_test() - dimension[" << long_to_string(i) << "]=" << long_to_string(dims[i])
                                 << endl);
@@ -626,7 +627,7 @@ CPPUNIT_TEST_SUITE( Dap4_CEFunctionsTest );
 
             DBG(cerr << "bind_shape_test_bad_shape() - Calling function_bind_shape_dap4()" << endl);
 
-            (void) function_bind_shape_dap4(&params, *two_arrays_dmr);
+            (void) function_dap4_bind_shape(&params, *two_arrays_dmr);
             CPPUNIT_ASSERT(
                     !"[ERROR] bind_shape_test_bad_shape() - Mismatched dimensions should have thrown an Exception");
         }
@@ -662,7 +663,7 @@ CPPUNIT_TEST_SUITE( Dap4_CEFunctionsTest );
 
             DBG(cerr << "bind_shape_test_no_data() - Calling function_bind_shape_dap4()" << endl);
 
-            BaseType *result = function_bind_shape_dap4(&params, *two_arrays_dmr);
+            BaseType *result = function_dap4_bind_shape(&params, *two_arrays_dmr);
             DBG(
                     cerr << "bind_shape_test_no_data() - function_bind_shape_dap4() returned an " << result->type_name()
                             << endl);
