@@ -3,8 +3,9 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
-// Author: James Gallagher <jgallagher@opendap.org>
+// Copyright (c) 2016 OPeNDAP, Inc.
+// Author: Nathan David Potter <ndp@opendap.org>
+//         James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,32 +23,14 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPYRIGHT URI/MIT 1994-1999
-// Please read the full copyright statement in the file COPYRIGHT_URI.
-//
-// Authors:
-//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
-
-// Interface for the class Sequence. A sequence contains a single set
-// of variables, all at the same lexical level just like a structure
-// (and like a structure, it may contain other ctor types...). Unlike
-// a structure, a sequence defines a pattern that is repeated N times
-// for a sequence of N elements. Thus, Sequence { String name; Int32
-// age; } person; means a sequence of N persons where each contain a
-// name and age. The sequence can be arbitrarily long (i.e., you don't
-// know N by looking at the sequence declaration.
-//
-// jhrg 9/14/94
-
 #ifndef _d4_tabular_sequence_h
 #define _d4_tabular_sequence_h 1
 
 #include <D4Sequence.h>
 
 namespace libdap {
-class ConstraintEvaluator;
 class DMR;
-class Marshaller;
+class D4StreamMarshaller;
 }
 
 namespace functions {
@@ -90,7 +73,7 @@ public:
 
     virtual ~D4TabularSequence() { }
 
-    virtual BaseType *ptr_duplicate() { return new TabularSequence(*this); }
+    virtual BaseType *ptr_duplicate() { return new D4TabularSequence(*this); }
 
     D4TabularSequence &operator=(const D4TabularSequence &rhs) {
         if (this == &rhs)
@@ -101,8 +84,10 @@ public:
         return *this;
     }
 
-    virtual bool serialize(libdap::ConstraintEvaluator &eval, libdap::DMR &dmr, libdap::Marshaller &m, bool ce_eval = true);
-    virtual void intern_data(libdap::ConstraintEvaluator &eval, libdap::DMR &dmr);
+    // DAP4 serialization methods; This class is a server-side only class,
+    // so no deserialize() method is defined.
+    virtual void intern_data();
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
 
     virtual void dump(ostream &strm) const;
 };
