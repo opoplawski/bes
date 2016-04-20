@@ -351,6 +351,8 @@ void TabularFunction::add_index_column(const Shape &indep_shape, const Shape &de
 
 BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
 {
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - BEGIN" << endl);
+
     int argc = argv.size();
     vector<Array*> the_arrays;
     // collect all of the arrays; separates them from other kinds of parameters
@@ -369,6 +371,7 @@ BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
     for (vector<Array*>::iterator i = the_arrays.begin(), e = the_arrays.end(); i != e; ++i) {
         min_dim_size = min((unsigned long) (*i)->dimensions(), min_dim_size);
     }
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - min_dim_size: "<< min_dim_size << endl);
 
     // collect the independent and dependent variables; size _and_ shape must match
     vector<Array*> indep_vars, dep_vars;
@@ -380,6 +383,7 @@ BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
             dep_vars.push_back(*i);
         }
     }
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - indep_vars.size(): "<< indep_vars.size() << "  dep_vars.size(): "<< dep_vars.size() << endl);
 
     Shape indep_shape = array_shape(indep_vars.at(0));
     // Test that all the indep arrays have the same shape
@@ -387,6 +391,8 @@ BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
         if (!shape_matches(*i, indep_shape))
             throw Error("In function tabular(): Expected all of the 'independent' variables to have the same shape.");
     }
+
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - Reading data..." << endl);
 
     // Read the values and load them into a SequenceValues object
     read_values(indep_vars);
@@ -435,22 +441,28 @@ BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
         result = dep_sv;
     }
 
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - Building response Sequence." << endl);
     auto_ptr<TabularSequence> response(new TabularSequence("table"));
 
     if (dep_vars.size() > 0) {
         // set the columns of the response
         for (SequenceValues::size_type n = 0; n < dep_vars.size(); ++n) {
+            BESDEBUG(DEBUG_KEY, "tablular_worker() - Adding dependent variable '"<< dep_vars[n]->var()->name() << "' to response Sequence." << endl);
             response->add_var(dep_vars[n]->var());
         }
     }
 
     for (SequenceValues::size_type n = 0; n < indep_vars.size(); ++n) {
+        BESDEBUG(DEBUG_KEY, "tablular_worker() - Adding independent variable '"<< indep_vars[n]->var()->name() << "' to response Sequence." << endl);
         response->add_var(indep_vars[n]->var());
     }
 
     // set the values of the response
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - Setting Sequence values result.size(): "<< result.size() << endl);
     response->set_value(result);
     response->set_read_p(true);
+
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - END. response: " << response.get()->type_name() << " " << response.get()->name() << endl);
 
     return response.release();
 
@@ -504,6 +516,8 @@ void TabularFunction::function_dap2_tabular(int argc, BaseType *argv[], DDS &, B
 
 BaseType *TabularFunction::function_dap4_tabular(D4RValueList *dvl_args, DMR &dmr){
 
+    BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - BEGIN" << endl);
+
     BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - Building argument vector for tablular_worker()" << endl);
     vector<BaseType*> args;
     for(unsigned int i=0; i< dvl_args->size(); i++){
@@ -514,7 +528,7 @@ BaseType *TabularFunction::function_dap4_tabular(D4RValueList *dvl_args, DMR &dm
 
     BaseType *result = tablular_worker(args);
 
-    BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - END (result: "<< result->name() << ")" << endl);
+    BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - END (result: "<< result->type_name() << " " << result->name() << ")" << endl);
     return result;
 
 }
