@@ -151,16 +151,8 @@ TabularSequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, b
 
         // Transfer values of the current row into the Seq's prototypes so the CE
         // evaluator will find the values.
-#if 1
         load_prototypes_with_values(btr, false);
-#else
-        int j = 0;
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            void *val = 0;
-            (*vi)->buf2val(&val);
-            d_vars.at(j++)->val2buf(val);
-        }
-#endif
+
         DBG(cerr << __func__ << ": Sequence element: " << hex << *btr.begin() << dec << endl);
         // Evaluate the CE against this row; continue (skipping this row) if it fails
         if (ce_eval && !eval.eval_selection(dds, dataset()))
@@ -204,21 +196,12 @@ void TabularSequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
     SequenceValues &values = value_ref();
 
     for (SequenceValues::iterator i = values.begin(), e = values.end(); i != e; ++i) {
-
         BaseTypeRow &btr = **i;
 
         // Transfer values of the current row into the Seq's prototypes so the CE
         // evaluator will find the values.
         load_prototypes_with_values(btr, false /* safe */);
-#if 0
-        int j = 0;
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            // TODO check this for efficiency - is the switch-based version (load_prototypes_with_values) faster?
-            void *val = 0;
-            (*vi)->buf2val(&val);
-            d_vars.at(j++)->val2buf(val);
-        }
-#endif
+
         // Evaluate the CE against this row; continue (skipping this row) if it fails
         if (!eval.eval_selection(dds, dataset()))
             continue;

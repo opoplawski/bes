@@ -43,7 +43,7 @@ gse.tab.cc lex.gse.cc GSEClause.cc GeoGridFunction.cc GridFunction.cc \
 LinearScaleFunction.cc VersionFunction.cc MakeArrayFunction.cc \
 MakeMaskFunction.cc DilateArrayFunction.cc \
 BindNameFunction.cc BindShapeFunction.cc TabularFunction.cc \
-TabularSequence.cc BBoxFunction.cc RoiFunction.cc roi_util.cc \
+TabularSequence.cc D4TabularSequence.cc BBoxFunction.cc RoiFunction.cc roi_util.cc \
 BBoxUnionFunction.cc Odometer.cc MaskArrayFunction.cc functions_util.cc
 
 HDRS = grid_utils.h DapFunctions.h GeoConstraint.h GridGeoConstraint.h \
@@ -51,7 +51,7 @@ gse.tab.hh gse_parser.h GSEClause.h GeoGridFunction.h \
 GridFunction.h LinearScaleFunction.h VersionFunction.h MakeArrayFunction.h \
 MakeMaskFunction.h DilateArrayFunction.h \
 BindNameFunction.h BindShapeFunction.h TabularFunction.h \
-TabularSequence.h BBoxFunction.h RoiFunction.h roi_util.h \
+TabularSequence.h D4TabularSequence.h BBoxFunction.h RoiFunction.h roi_util.h \
 BBoxUnionFunction.h Odometer.h MaskArrayFunction.h functions_util.h
 
 libfunctions_module_la_SOURCES = $(SRCS) $(HDRS)

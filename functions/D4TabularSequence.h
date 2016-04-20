@@ -43,7 +43,7 @@ class D4TabularSequence: public libdap::D4Sequence
 {
 private:
 protected:
-    void load_prototypes_with_values(libdap::BaseTypeRow &btr, bool safe = true);
+    void load_prototypes_with_values(libdap::D4SeqRow &btr, bool safe = true);
 
 public:
     /** The Sequence constructor requires only the name of the variable
@@ -86,8 +86,7 @@ public:
 
     // DAP4 serialization methods; This class is a server-side only class,
     // so no deserialize() method is defined.
-    virtual void intern_data();
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
+    virtual void serialize(libdap::D4StreamMarshaller &m, libdap::DMR &dmr, bool filter = false);
 
     virtual void dump(ostream &strm) const;
 };

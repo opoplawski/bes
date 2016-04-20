@@ -45,6 +45,7 @@
 #include <ConstraintEvaluator.h>
 #include <Marshaller.h>
 #include <UnMarshaller.h>
+#include <D4StreamMarshaller.h>
 #include <debug.h>
 
 #include "D4TabularSequence.h"
@@ -54,32 +55,14 @@ using namespace libdap;
 
 namespace functions {
 
-// static constants and functions copied from the parent class. These
-// should never have been static... hindsight
-
-static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
-static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
-
-static void
-write_end_of_sequence(Marshaller &m)
-{
-    m.put_opaque( (char *)&end_of_sequence, 1 ) ;
-}
-
-static void
-write_start_of_instance(Marshaller &m)
-{
-    m.put_opaque( (char *)&start_of_instance, 1 ) ;
-}
-
-void D4TabularSequence::load_prototypes_with_values(BaseTypeRow &btr, bool safe)
+void D4TabularSequence::load_prototypes_with_values(D4SeqRow &btr, bool safe)
 {
     // For each of the prototype variables in the Sequence, load it
     // with a values from the BaseType* vector. The order should match.
     // Test the type, but assume if that matches, the value is correct
     // for the variable.
     Vars_iter i = d_vars.begin(), e = d_vars.end();
-    for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
+    for (D4SeqRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
 
         if (safe && (i == e || ((*i)->type() != (*vi)->var()->type())))
             throw InternalErr(__FILE__, __LINE__, "Expected number and types to match when loading values for selection expression evaluation.");
@@ -122,8 +105,18 @@ void D4TabularSequence::load_prototypes_with_values(BaseTypeRow &btr, bool safe)
 // Public member functions
 
 /**
- * Specialized version of Sequence::serialize() for tables that already
+ * Specialized version of D4TabularSequenceSequence::serialize() for tables that already
  * hold their data. This will not work for nested Sequences.
+ *
+ * @note This version ignores CE filters. It also assumes that the requester
+ * (the caller of the tabular() function) did not include arrays that were
+ * subsequently not 'projected.' Improve this code by improving the way
+ * D4TabularSequence stores values from the Arrays. One way would be to use
+ * local storage for the values and use a list, not a vector. Then the code
+ * can iterate over the list, removing entries that fail the filter, and
+ * serialize the result. We still have to have the entire thing in memory,
+ * but only one copy instead of two.
+ *
  *
  * @note The ce_eval parameter was being set to false in BESDapResponseBuilder
  * when the code was processing a response from a function. I changed that to
@@ -137,142 +130,24 @@ void D4TabularSequence::load_prototypes_with_values(BaseTypeRow &btr, bool safe)
  * @param ce_eval
  * @return
  */
-bool
-D4TabularSequence::serialize(ConstraintEvaluator &eval, DMR &dmr, Marshaller &m, bool ce_eval /* true */)
+void D4TabularSequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool /* filter; false */)
 {
-    DBG(cerr << "Entering TabularSequence::serialize for " << name() << endl);
+    D4SeqValues values = value();   // TODO Replace with value_ref(). jhrg 4/20/16
 
-    D4SeqValues sequenceValues = this->value();
+    // write D4TabularSequence::length(); don't include the length in the checksum
+    m.put_count(values.size());
 
-
-    for (D4SeqValues::iterator i = sequenceValues.begin(), e = sequenceValues.end(); i != e; ++i) {
-        BaseTypeRow &btr = **i;
-        // Transfer values of the current row into the Seq's prototypes so the CE
-        // evaluator will find the values.
-#if 1
-        load_prototypes_with_values(btr, false);
-#else
-        int j = 0;
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            void *val = 0;
-            (*vi)->buf2val(&val);
-            d_vars.at(j++)->val2buf(val);
-        }
-#endif
-        DBG(cerr << __func__ << ": Sequence element: " << hex << *btr.begin() << dec << endl);
-        // Evaluate the CE against this row; continue (skipping this row) if it fails
-        if (ce_eval && !eval.eval_selection(dmr, dataset()))
-            continue;
-
-    }
-
-
-
-
-
-
-
-    SequenceValues &values = value_ref();
-    //ce_eval = true; Commented out here and changed in BESDapResponseBuilder. jhrg 3/10/15
-
-    for (SequenceValues::iterator i = values.begin(), e = values.end(); i != e; ++i) {
-
-        BaseTypeRow &btr = **i;
-
-        // Transfer values of the current row into the Seq's prototypes so the CE
-        // evaluator will find the values.
-#if 1
-        load_prototypes_with_values(btr, false);
-#else
-        int j = 0;
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            void *val = 0;
-            (*vi)->buf2val(&val);
-            d_vars.at(j++)->val2buf(val);
-        }
-#endif
-        DBG(cerr << __func__ << ": Sequence element: " << hex << *btr.begin() << dec << endl);
-        // Evaluate the CE against this row; continue (skipping this row) if it fails
-        if (ce_eval && !eval.eval_selection(dmr, dataset()))
-            continue;
-
-        // Write out this row of values
-        write_start_of_instance(m);
-
-        // In this loop serialize will signal an error with an exception.
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            if ((*vi)->send_p()) {
-                (*vi)->serialize(eval, dmr, m, false);
-            }
+    // By this point the d_values object holds all and only the values to be sent;
+    // use the serialize methods to send them (but no need to test send_p).
+    for (D4SeqValues::iterator i = values.begin(), e = values.end(); i != e; ++i) {
+        for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
+            if ((*j)->send_p())
+                (*j)->serialize(m, dmr, false /* filter */);
         }
     }
-
-    write_end_of_sequence(m);
-
-    return true;  // Signal errors with exceptions.
-}
-
-/**
- * Specialized intern_data(). This version copies data from the TabularSequence's
- * local store and filters it. Because callers of intern_data() expect that the
- * object will, after calling this method, hold only data to be sent, this version
- * performs both projection and selection operations.
- *
- * @param eval
- * @param dds
- */
-void D4TabularSequence::intern_data(ConstraintEvaluator &eval, DMR &dmr)
-{
-    DBG(cerr << "Entering TabularSequence::intern_data" << endl);
-
-    // TODO Special case when there are no selection clauses
-    // TODO Use a destructive copy to move values from 'values' to
-    // result? Or pop values - find a way to not copy all the values
-    // after doing some profiling to see if this code can be meaningfully
-    // optimized
-    SequenceValues result;      // These values satisfy the CE
-    SequenceValues &values = value_ref();
-
-    for (SequenceValues::iterator i = values.begin(), e = values.end(); i != e; ++i) {
-
-        BaseTypeRow &btr = **i;
-
-        // Transfer values of the current row into the Seq's prototypes so the CE
-        // evaluator will find the values.
-        load_prototypes_with_values(btr, false /* safe */);
-#if 0
-        int j = 0;
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            // TODO check this for efficiency - is the switch-based version (load_prototypes_with_values) faster?
-            void *val = 0;
-            (*vi)->buf2val(&val);
-            d_vars.at(j++)->val2buf(val);
-        }
-#endif
-        // Evaluate the CE against this row; continue (skipping this row) if it fails
-        if (!eval.eval_selection(dmr, dataset()))
-            continue;
-
-        BaseTypeRow *result_row = new BaseTypeRow();
-        for (BaseTypeRow::iterator vi = btr.begin(), ve = btr.end(); vi != ve; ++vi) {
-            if ((*vi)->send_p()) {
-                result_row->push_back(*vi);
-            }
-        }
-
-        result.push_back(result_row);
-    }
-
-    set_value(result);
-
-    DBG(cerr << "Leaving TabularSequence::intern_data" << endl);
 }
 
 /** @brief dumps information about this object
- *
- * Displays the pointer value of this instance and information about this
- * instance.
- *
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */

@@ -38,15 +38,14 @@ private:
     friend class TabularFunctionTest;
     friend class Dap4_TabularFunctionTest;
 
+    enum ResponseType { DAP2 = 1, DAP4 = 2};
+
     typedef std::vector< std::vector<libdap::BaseType*> *> SequenceValues;
     typedef std::vector<unsigned long> Shape;
 
     static void function_dap2_tabular(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp);
     static libdap::BaseType *function_dap4_tabular(libdap::D4RValueList *args, libdap::DMR &dmr);
 
-#if 0
-    static void function_dap2_tabular_2(int argc, libdap::BaseType *argv[], libdap::DDS &, libdap::BaseType **btpp);
-#endif
     // These are static so that the code does not have to make a TabularFunction
     // instance to access them. They are 'in' TabularFunction to control the name
     // space - they were static functions but that made it impossible to write
@@ -66,7 +65,7 @@ private:
     static void add_index_column(const Shape &indep_shape, const Shape &dep_shape,
             std::vector<libdap::Array*> &dep_vars);
 
-    static libdap::BaseType *tablular_worker(std::vector<libdap::BaseType*> argv);
+    static libdap::BaseType *tablular_worker(std::vector<libdap::BaseType*> argv, ResponseType response_type = DAP2);
 
 public:
     TabularFunction()

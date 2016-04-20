@@ -96,7 +96,7 @@ GridGeoConstraintTest_OBJ = ../GeoConstraint.o ../GridGeoConstraint.o
 GridGeoConstraintTest_LDADD = $(GridGeoConstraintTest_OBJ) $(AM_LDADD) -ltest-types $(DAP_LIBS)
 
 TabularFunctionTest_SOURCES = TabularFunctionTest.cc 
-TabularFunctionTest_OBJ = ../TabularFunction.o  ../TabularSequence.o
+TabularFunctionTest_OBJ = ../TabularFunction.o  ../TabularSequence.o ../D4TabularSequence.o
 TabularFunctionTest_LDADD = $(TabularFunctionTest_OBJ) $(AM_LDADD) -ltest-types $(DAP_LIBS)
 
 BBoxFunctionTest_OBJ = ../BBoxFunction.o

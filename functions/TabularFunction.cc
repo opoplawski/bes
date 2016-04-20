@@ -46,6 +46,7 @@
 #include <BESDebug.h>
 
 #include "TabularSequence.h"
+#include "D4TabularSequence.h"
 #include "TabularFunction.h"
 
 using namespace std;
@@ -349,7 +350,13 @@ void TabularFunction::add_index_column(const Shape &indep_shape, const Shape &de
     dep_vars.insert(dep_vars.begin(), a);
 }
 
-BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
+/**
+ * @brief Compute the sequence and return it.
+ * @param argv
+ * @param dap2 If true, build a DAP2 Sequence, otherwise build a DAP4 D4Sequence
+ * @return
+ */
+BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv, ResponseType response_type)
 {
     BESDEBUG(DEBUG_KEY, "tablular_worker() - BEGIN" << endl);
 
@@ -401,7 +408,7 @@ BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
     build_sequence_values(indep_vars, indep_sv);
 
     // Set the reference to the result. If there are any dependent variables,
-    // 'result' will be set to 'dep_vars' once that has been hasked and the
+    // 'result' will be set to 'dep_vars' once that has been asked and the
     // indep_vars merged in.
     SequenceValues &result = indep_sv;
 
@@ -441,31 +448,78 @@ BaseType *TabularFunction::tablular_worker(vector<BaseType*> argv)
         result = dep_sv;
     }
 
-    BESDEBUG(DEBUG_KEY, "tablular_worker() - Building response Sequence." << endl);
-    auto_ptr<TabularSequence> response(new TabularSequence("table"));
+    BaseType *result_table; // We use this to hold a pointer to the return to
+                            // return, just to have a single exit point.
 
-    if (dep_vars.size() > 0) {
-        // set the columns of the response
-        for (SequenceValues::size_type n = 0; n < dep_vars.size(); ++n) {
-            BESDEBUG(DEBUG_KEY, "tablular_worker() - Adding dependent variable '"<< dep_vars[n]->var()->name() << "' to response Sequence." << endl);
-            response->add_var(dep_vars[n]->var());
+    switch (response_type) {
+    case DAP2: {
+        BESDEBUG(DEBUG_KEY, "tablular_worker() - Building response Sequence." << endl);
+        auto_ptr<TabularSequence> response(new TabularSequence("table"));
+
+        if (dep_vars.size() > 0) {
+            // set the columns of the response
+            for (SequenceValues::size_type n = 0; n < dep_vars.size(); ++n) {
+                BESDEBUG(DEBUG_KEY,
+                    "tablular_worker() - Adding dependent variable '"<< dep_vars[n]->var()->name() << "' to response Sequence." << endl);
+                response->add_var(dep_vars[n]->var());
+            }
         }
+
+        for (SequenceValues::size_type n = 0; n < indep_vars.size(); ++n) {
+            BESDEBUG(DEBUG_KEY,
+                "tablular_worker() - Adding independent variable '"<< indep_vars[n]->var()->name() << "' to response Sequence." << endl);
+            response->add_var(indep_vars[n]->var());
+        }
+
+        // set the values of the response
+        BESDEBUG(DEBUG_KEY, "tablular_worker() - Setting Sequence values result.size(): "<< result.size() << endl);
+        response->set_value(result);
+        response->set_read_p(true);
+
+        result_table = response.release();
+
+        break;
+    }
+    case DAP4: { // DAP4
+        BESDEBUG(DEBUG_KEY, "tablular_worker() - Building response D$Sequence." << endl);
+        auto_ptr<D4TabularSequence> response(new D4TabularSequence("table"));
+
+        if (dep_vars.size() > 0) {
+            // set the columns of the response
+            for (D4SeqValues::size_type n = 0; n < dep_vars.size(); ++n) {
+                BESDEBUG(DEBUG_KEY,
+                    "tablular_worker() - Adding dependent variable '"<< dep_vars[n]->var()->name() << "' to response D4Sequence." << endl);
+                response->add_var(dep_vars[n]->var());
+            }
+        }
+
+        for (D4SeqValues::size_type n = 0; n < indep_vars.size(); ++n) {
+            BESDEBUG(DEBUG_KEY,
+                "tablular_worker() - Adding independent variable '"<< indep_vars[n]->var()->name() << "' to response Sequence." << endl);
+            response->add_var(indep_vars[n]->var());
+        }
+
+        // set the values of the response
+        BESDEBUG(DEBUG_KEY, "tablular_worker() - Setting Sequence values result.size(): "<< result.size() << endl);
+        response->set_value(result);
+        response->set_read_p(true);
+
+        BESDEBUG(DEBUG_KEY,
+            "tablular_worker() - END. response: " << response.get()->type_name() << " " << response.get()->name() << endl);
+
+        result_table = response.release();
+
+        break;
     }
 
-    for (SequenceValues::size_type n = 0; n < indep_vars.size(); ++n) {
-        BESDEBUG(DEBUG_KEY, "tablular_worker() - Adding independent variable '"<< indep_vars[n]->var()->name() << "' to response Sequence." << endl);
-        response->add_var(indep_vars[n]->var());
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Expected DAP2 or DAP4.");
     }
 
-    // set the values of the response
-    BESDEBUG(DEBUG_KEY, "tablular_worker() - Setting Sequence values result.size(): "<< result.size() << endl);
-    response->set_value(result);
-    response->set_read_p(true);
+    BESDEBUG(DEBUG_KEY, "tablular_worker() - END. response: " << result_table->type_name() << " "
+        << result_table->name() << endl);
 
-    BESDEBUG(DEBUG_KEY, "tablular_worker() - END. response: " << response.get()->type_name() << " " << response.get()->name() << endl);
-
-    return response.release();
-
+    return result_table;
 }
 
 
@@ -507,7 +561,7 @@ void TabularFunction::function_dap2_tabular(int argc, BaseType *argv[], DDS &, B
         args.push_back(bt);
     }
 
-    *btpp = tablular_worker(args);
+    *btpp = tablular_worker(args, DAP2);
 
     BESDEBUG(DEBUG_KEY, "function_dap2_tabular() - END (result: "<< (*btpp)->name() << ")" << endl);
     return;
@@ -526,61 +580,11 @@ BaseType *TabularFunction::function_dap4_tabular(D4RValueList *dvl_args, DMR &dm
         args.push_back(bt);
     }
 
-    BaseType *result = tablular_worker(args);
+    BaseType *result = tablular_worker(args, DAP4);
 
     BESDEBUG(DEBUG_KEY, "function_dap4_tabular() - END (result: "<< result->type_name() << " " << result->name() << ")" << endl);
     return result;
 
 }
-
-
-
-
-#if 0
-
-// Rework this as time permits. jhrg 3/12/15
-
-/**
- * This takes N Arrays where each is the same shape and returns a
- * DAP4 Sequence with the values of those arrays enumerated as a
- * table.
- *
- * @note The main difference between this function and the DAP2
- * version is to use args->size() in place of argc and
- * args->get_rvalue(n)->value(dmr) in place of argv[n].
- *
- * @see function_dap2_tabular
- */
-BaseType *TabularFunction::function_dap4_tabular(D4RValueList *args, DMR &dmr)
-{
-    // unique_ptr is not avialable on gcc 4.2. jhrg 2/11/15
-    //unique_ptr<D4Sequence> response(new D4Sequence("table"));
-    auto_ptr<D4Sequence> response(new D4Sequence("table"));
-
-    int num_arrays = args->size();              // Might pass in other stuff...
-    vector<unsigned long> shape;            // Holds shape info; used to test array sizes for uniformity
-    vector<Array*> the_arrays(num_arrays);
-
-    for (int n = 0; n < num_arrays; ++n) {
-        TabularFunction::build_columns(n, args->get_rvalue(n)->value(dmr), the_arrays, shape);
-    }
-
-    DBG(cerr << "the_arrays.size(): " << the_arrays.size() << endl);
-
-    for (unsigned long n = 0; n < the_arrays.size(); ++n) {
-        response->add_var(the_arrays[n]->var());
-    }
-
-    unsigned long num_values = TabularFunction::number_of_values(shape);
-    D4SeqValues sv(num_values);
-    // sv is a value-result parameter
-    TabularFunction::build_sequence_values(the_arrays, sv);
-
-    response->set_value(sv);
-    response->set_read_p(true);
-
-    return response.release();
-}
-#endif
 
 } // namesspace functions
