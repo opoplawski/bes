@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="function_results">
+    <Sequence name="table">
+        <Float32 name="lat"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>faa9f195</Value>
+        </Attribute>
+    </Sequence>
+</Dataset>
+
+The data:
+Sequence {
+    Float32 lat;
+} table = { 
+0: { 80 }, 
+1: { 70 }, 
+2: { 60 }, 
+3: { 50 }, 
+4: { 40 }, 
+5: { 30 }, 
+6: { 20 }, 
+7: { 10 }, 
+8: { 0 }, 
+9: { -10 }, 
+10: { -20 }, 
+11: { -30 }, 
+12: { -40 }, 
+13: { -50 }, 
+14: { -60 }, 
+15: { -70 }, 
+16: { -80 } };
+
