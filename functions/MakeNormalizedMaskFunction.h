@@ -46,7 +46,7 @@ namespace functions {
 ///                                    const std::vector< std::vector<double> > &maps);
 ///bool all_indices_valid(std::vector<int> indices);
 template<typename T>
-void make_normalized_mask_helper(const std::vector<libdap::Array*> dims, libdap::Array *tuples, std::vector<libdap::dods_byte> &mask);
+vector< vector<int> > make_normalized_mask_helper(const std::vector<libdap::Array*> dims, libdap::Array *tuples); // , std::vector<libdap::dods_byte> &mask);
 
 void function_dap2_make_normalized_mask(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp);
 
