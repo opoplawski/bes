@@ -50,6 +50,13 @@ void check_number_type_array(libdap::BaseType *btp, unsigned int rank = 0);
 
 unsigned int extract_uint_value(libdap::BaseType *arg);
 
+int find_value_index(double value, const std::vector<double> &map);
+
+std::vector<int> find_value_indices(const std::vector<double> &values,
+                                    const std::vector< std::vector<double> > &maps);
+
+bool all_indices_valid(std::vector<int> indices);
+
 #if 0
 /// We might move these into functions_util over time if they become generally
 /// useful. jhrg 5/1/15

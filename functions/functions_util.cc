@@ -174,4 +174,61 @@ unsigned int extract_uint_value(BaseType *arg)
     }
 }
 
+/**
+ * Scan the given map and return the first index of value
+ * or -1 if the value is not found.
+ * @param value
+ * @param map
+ * @return The index of value in map
+ */
+int
+find_value_index(double value, const vector<double> &map)
+{
+    // If C++ hadn't borked passing functions to stl algorithms, we could use...
+    //vector<double>::iterator loc = find_if(map.begin(), map.end(), bind2nd(ptr_fun(double_eq), value));
+
+    for (vector<double>::const_iterator i = map.begin(), e = map.end(); i != e; ++i) {
+        if (double_eq(*i, value, 0.1)) {        // FIXME Hack: 0.1 epsilon is a hack. jhrg 5/25/15
+            return i - map.begin(); // there's an official iterator diff function somewhere...
+        }
+    }
+
+    return -1;
+}
+
+/**
+ * Given a vector of values and a matching number of maps,
+ * find the set of indices for value_0 in map_0, value_1 in
+ * map_1, ... and return those in a vector of integers. If
+ * any of the values cannot be found, return -1 for it's index.
+ *
+ * @param values Look for these values in the corresponding maps
+ * @param maps The maps
+ * @return A vector of index values; -1 indicates the corresponding
+ * value was not found.
+ */
+vector<int>
+find_value_indices(const vector<double> &values, const vector< vector<double> > &maps)
+{
+    assert(values.size() == maps.size());
+
+    vector<int> indices;
+    vector <vector<double> >::const_iterator m = maps.begin();
+    for (vector<double>::const_iterator d = values.begin(), e = values.end(); d != e; ++d) {
+        indices.push_back(find_value_index(*d, *m++));
+    }
+
+    return indices;
+}
+
+/**
+ * Are any of the idex values -1? if so, this is not a valid index list
+ * @param indices vector of integer indices
+ * @return True if all of the index values are positive, false otherwise
+ */
+bool all_indices_valid(vector<int> indices)
+{
+    return find(indices.begin(), indices.end(), -1) == indices.end();
+}
+
 } // namespace functions
