@@ -49,7 +49,7 @@ BBoxUnionFunction.cc Odometer.cc MaskArrayFunction.cc functions_util.cc
 HDRS = grid_utils.h DapFunctions.h GeoConstraint.h GridGeoConstraint.h \
 gse.tab.hh gse_parser.h GSEClause.h GeoGridFunction.h \
 GridFunction.h LinearScaleFunction.h VersionFunction.h MakeArrayFunction.h \
-MakeMaskFunction.h DilateArrayFunction.h MakeNormalizedMaskFunction.cc \
+MakeMaskFunction.h DilateArrayFunction.h MakeNormalizedMaskFunction.h \
 BindNameFunction.h BindShapeFunction.h TabularFunction.h \
 TabularSequence.h BBoxFunction.h RoiFunction.h roi_util.h \
 BBoxUnionFunction.h Odometer.h MaskArrayFunction.h functions_util.h
