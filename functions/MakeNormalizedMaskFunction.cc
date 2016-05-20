@@ -96,7 +96,7 @@ string make_normalized_mask_info =
  */
 
 template<typename T>
-void make_normalized_mask_helper(const vector<Array*> dims, Array *tuples, vector<int> &nmask)
+vector< vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Array *tuples)
 {
 
     vector< vector<double> > dim_value_vecs(dims.size());
@@ -177,6 +177,8 @@ void make_normalized_mask_helper(const vector<Array*> dims, Array *tuples, vecto
     yEnd = yLoc.end(); 
     yStart = yLoc.begin();
 
+    vector< vector<int> > result;
+
     for (xDx = xLoc.begin(),yDx = yLoc.begin(); xDx != xLoc.end() && yDx != yLoc.end(); ++xDx, ++yDx) {
     //for (int i = segStart; i < segEnd; i++ ) {
 
@@ -221,10 +223,11 @@ void make_normalized_mask_helper(const vector<Array*> dims, Array *tuples, vecto
 	    
 	    CF_offsets.push_back(odometer.offset());  // Store target array offset for normalized point
 	}
-	/**************
-	nmask.push_back(CF_offsets);  // Store all 15 normalized points
-	***************/
+
+	result.push_back(CF_offsets);  // Store all 15 normalized points in result
     }
+
+    return result;
 }
 
 
@@ -303,37 +306,37 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
 
     // Create the 'normalization_mask' array using the number of input tuples times 15, to represent a 2-dimensional array size [15][n-tuples].
 
-    vector<int> normalizedMask(tuples->length()/nDims);  // Create 'xLocations' array, initialized with zero's
+    vector< vector<int> > mask;
 
     switch (tuples->var()->type()) {
     // All mask values are stored in Byte DAP variables by the stock argument parser
     // except values too large; those are stored in a UInt32
     case dods_byte_c:
-        make_normalized_mask_helper<dods_byte>(dims, tuples, normalizedMask);
+        mask = make_normalized_mask_helper<dods_byte>(dims, tuples);
         break;
 
     case dods_int16_c:
-        make_normalized_mask_helper<dods_int16>(dims, tuples, normalizedMask);
+        mask = make_normalized_mask_helper<dods_int16>(dims, tuples);
         break;
 
     case dods_uint16_c:
-        make_normalized_mask_helper<dods_uint16>(dims, tuples, normalizedMask);
+        mask = make_normalized_mask_helper<dods_uint16>(dims, tuples);
         break;
 
     case dods_int32_c:
-        make_normalized_mask_helper<dods_int32>(dims, tuples, normalizedMask);
+        mask = make_normalized_mask_helper<dods_int32>(dims, tuples);
         break;
 
     case dods_uint32_c:
-        make_normalized_mask_helper<dods_uint32>(dims, tuples, normalizedMask);
+        mask = make_normalized_mask_helper<dods_uint32>(dims, tuples);
         break;
 
     case dods_float32_c:
-        make_normalized_mask_helper<dods_float32>(dims, tuples, normalizedMask);
+        mask = make_normalized_mask_helper<dods_float32>(dims, tuples);
         break;
 
     case dods_float64_c:
-        make_normalized_mask_helper<dods_float64>(dims, tuples, normalizedMask);
+        mask  = make_normalized_mask_helper<dods_float64>(dims, tuples);
         break;
 
     case dods_str_c:
@@ -353,8 +356,8 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
 	dest->append_dim(a->dimension_size(itr));
     }
 
-    dest->set_value(normalizedMask, a->length());
-    dest->set_read_p(true);
+    //dest->set_value(mask, a->length());
+    //dest->set_read_p(true);
 
     *btpp = dest;
 }
