@@ -348,18 +348,23 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
 
     // BESDEBUG("function", "function_dap2_make_mask() -target " << requestedTargetName << " -nDims " << nDims << endl);
 
-    Array *dest = new Array("normalized_mask", 0);	// The ctor for Array copies the prototype pointer...
-    BaseTypeFactory btf;
-    dest->add_var_nocopy(btf.NewVariable(dods_byte_c));	// ... so use add_var_nocopy() to add it instead
+    vector<int> normalizedMask;
 
-    for (Array::Dim_iter itr = a->dim_begin(); itr != a->dim_end(); ++itr) {
-	dest->append_dim(a->dimension_size(itr));
+    vector< vector<int> >::const_iterator row;
+
+    for (row = mask.begin(); row != mask.end(); ++row) {
+	std::copy(row->begin(), row->end(), std::back_inserter(normalizedMask));
     }
 
-    //dest->set_value(mask, a->length());
-    //dest->set_read_p(true);
-
+    
+    Array *dest = new Array("mask", 0);	// The ctor for Array copies the prototype pointer...
+    BaseTypeFactory btf;
+    dest->add_var_nocopy(new UInt32("mask"));	// ... so use add_var_nocopy() to add it instead
+    
+    dest->set_value(normalizedMask, normalizedMask.size());
+    dest->set_read_p(true);
     *btpp = dest;
+
 }
 
 } // namespace functions
