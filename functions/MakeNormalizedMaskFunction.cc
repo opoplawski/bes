@@ -264,9 +264,6 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
         throw Error(malformed_expr, "make_normalized_mask(first argument must point to a DAP2 Grid variable.");
     }
 
-    Grid *g = static_cast<Grid*>(btp);
-    Array *a = g->get_array();
-
     // read argv[1], the number[N] of dimension variables represented in tuples
     if (!is_integer_type(argv[1]->type()))
         throw Error(malformed_expr, "make_normalized_mask(): Expected an integer for the second argument.");
@@ -355,13 +352,15 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
     for (row = mask.begin(); row != mask.end(); ++row) {
 	std::copy(row->begin(), row->end(), std::back_inserter(normalizedMask));
     }
-
     
     Array *dest = new Array("mask", 0);	// The ctor for Array copies the prototype pointer...
     BaseTypeFactory btf;
     dest->add_var_nocopy(new UInt32("mask"));	// ... so use add_var_nocopy() to add it instead
     
-    dest->set_value(normalizedMask, normalizedMask.size());
+    dest->append_dim(mask.size());              // set dimensions to 2d mask.sizes()
+    dest->append_dim(mask.at(0).size());
+
+    dest->set_value(normalizedMask, normalizedMask.size()); 
     dest->set_read_p(true);
     *btpp = dest;
 
