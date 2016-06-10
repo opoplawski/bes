@@ -253,7 +253,7 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
     DBG(cerr << "argc = " << argc << endl);
     if (argc < 4)
         throw Error(malformed_expr,
-                "make_normalized_mask(target,nDims,[dim1,...],$TYPE(dim1_value0,dim2_value0,...)) requires at least four arguments.");
+                "make_normalized_mask(target,nDims,dim1[,dim2...],$TYPE(dim1_value0,[dim2_value0,]...)) requires at least four arguments.");
 
     // string requestedTargetName = extract_string_argument(argv[0]);
     // BESDEBUG("functions", "Requested target variable: " << requestedTargetName << endl);
