@@ -249,44 +249,50 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
         return;
     }
 
-    // Check for two args or more. The first two must be strings.
+    // Check for three args or more. The first two must be strings.                                                                                           
     DBG(cerr << "argc = " << argc << endl);
-    if (argc < 4)
+    if (argc < 3)
         throw Error(malformed_expr,
-                "make_normalized_mask(target,nDims,[dim1,...],$TYPE(dim1_value0,dim2_value0,...)) requires at least four arguments.");
+		    "make_normalized_mask(shape_string,[dim1,...],$TYPE(dim1_value0,dim2_value0,...)) requires at least three arguments.");
+
+    if (argv[0]->type() != dods_str_c)
+        throw Error(malformed_expr, "make_normalized_mask(): first argument must point to a string variable.");
+
+    string shape_str = extract_string_argument(argv[0]);
+    vector<int> shape = parse_dims(shape_str);
+
+    unsigned int nDims = shape.size();
+
+    // read argv[1] -> argv[1+numberOfDims]; the grid dimensions where we will find the values                                                                
+    // of the mask tuples. Also note that the number of dims (shape.size() above) should be the                                                               
+    // same as argc-2.                                                                                                                                        
+    assert(nDims == (unsigned int)argc-2);
 
     // string requestedTargetName = extract_string_argument(argv[0]);
     // BESDEBUG("functions", "Requested target variable: " << requestedTargetName << endl);
 
     BaseType *btp = argv[0];
 
-    if (btp->type() != dods_grid_c) {
-        throw Error(malformed_expr, "make_normalized_mask(first argument must point to a DAP2 Grid variable.");
-    }
-
-    // read argv[1], the number[N] of dimension variables represented in tuples
-    if (!is_integer_type(argv[1]->type()))
-        throw Error(malformed_expr, "make_normalized_mask(): Expected an integer for the second argument.");
-    unsigned int nDims = extract_uint_value(argv[1]);
-
     // read argv[2] -> argv[2+numberOfDims]; the grid dimensions where we will find the values
     // of the mask tuples.
     vector<Array*> dims;
     for (unsigned int i = 0; i < nDims; i++) {
 
-        btp = argv[2 + i];
+        btp = argv[1 + i];
         if (btp->type() != dods_array_c) {
             throw Error(malformed_expr,
                     "make_normalized_mask(): dimension-name arguments must point to Grid variable dimensions.");
         }
 
-        int dSize;
         Array *a = static_cast<Array*>(btp);
-        for (Array::Dim_iter itr = a->dim_begin(); itr != a->dim_end(); ++itr) {
-            dSize = a->dimension_size(itr);
-            DBG(cerr << "dim[" << i << "] = " << a->name() << " size=" << dSize << endl);
-        }
 
+	// Check that each map size matches the 'shape' info passed in the first arg.                                                                         
+        // This might not be the case for DAP4 (or if we change this to support level                                                                         
+        // 2 swath data).                                                                                                                                     
+        assert(a->dimension_size(a->dim_begin()) == shape.at(i));
+
+        a->read();
+	a->set_read_p(true);
         dims.push_back(a);
     }
 
