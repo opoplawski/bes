@@ -4,8 +4,8 @@
 # of relying on handlerslike netcdf, etc., that may not be built when these
 # tests are rn.
  
-BES.User=user_name
-BES.Group=group_name
+BES.User=dan
+BES.Group=daemon
 
 BES.LogName=./bes.log
 BES.LogVerbose=no
