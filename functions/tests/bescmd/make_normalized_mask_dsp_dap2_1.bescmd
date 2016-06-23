@@ -16,6 +16,6 @@
     </bes:container>
   </bes:define>
   
-  <bes:get type="dods" definition="d1" />
+  <bes:get type="dds" definition="d1" />
   
 </bes:request>

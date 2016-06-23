@@ -9,6 +9,7 @@
   
   <bes:define name="d1" space="default">
     <bes:container name="c"/>
+    <bes:constraint>dsp_band_1.lat</bes:constraint>
   </bes:define>
   
   <bes:get type="dods" definition="d1" />
