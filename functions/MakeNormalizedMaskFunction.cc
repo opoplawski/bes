@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include <cassert>
 
@@ -71,10 +71,9 @@ using namespace std;
 namespace functions {
 
 string make_normalized_mask_info =
-        string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                + "<function name=\"make_normalized_mask\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#make_normalized_mask\">\n"
-                + "</function>";
-
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        + "<function name=\"make_normalized_mask\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#make_normalized_mask\">\n"
+        + "</function>";
 
 // Dan: In this function I made the vector<dods_byte> a reference so that changes to
 // it will be accessible to the caller without having to return the vector<> mask
@@ -96,10 +95,10 @@ string make_normalized_mask_info =
  */
 
 template<typename T>
-vector< vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Array *tuples)
+vector<vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Array *tuples)
 {
 
-    vector< vector<double> > dim_value_vecs(dims.size());
+    vector<vector<double> > dim_value_vecs(dims.size());
     int i = 0;  // index the dim_value_vecs vector of vectors;
     for (vector<Array*>::const_iterator d = dims.begin(), e = dims.end(); d != e; ++d) {
         // This version of extract...() takes the vector<double> by reference:
@@ -112,7 +111,7 @@ vector< vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Arr
 
     int j = 0;  // index the shape vector for an Odometer;
     for (vector<Array*>::const_iterator d = dims.begin(), e = dims.end(); d != e; ++d) {
-	shape[j++] = (*d)->length();
+        shape[j++] = (*d)->length();
     }
 
     Odometer odometer(shape);
@@ -125,8 +124,8 @@ vector< vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Arr
     int nDims = dims.size();
     int nTuples = data.size() / nDims;
 
-    vector<int> xLoc(nTuples,0);  // Create 'xLoc' array, initialized with zero's
-    vector<int> yLoc(nTuples,0);  // Create 'yLoc' array, initialized with zero's
+    vector<int> xLoc(nTuples, 0);  // Create 'xLoc' array, initialized with zero's
+    vector<int> yLoc(nTuples, 0);  // Create 'yLoc' array, initialized with zero's
 
     // NB: 'data' holds the tuple values
 
@@ -139,28 +138,28 @@ vector< vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Arr
             tuple[dim] = data[n * nDims + dim];
         }
 
-        DBG(cerr << "tuple: ");
-        DBGN(copy(tuple.begin(), tuple.end(), ostream_iterator<int>(std::cerr, " ")));
-        DBGN(cerr << endl);
+        DBG(cerr << "tuple: "); DBGN(copy(tuple.begin(), tuple.end(), ostream_iterator<double>(std::cerr, " "))); DBGN(cerr << endl);
 
         // find indices for tuple-values in the specified
-	// target-grid dimensions
-	vector<int> indices = find_value_indices(tuple, dim_value_vecs);
-	DBG(cerr << "indices: ");
-        DBGN(copy(indices.begin(), indices.end(), ostream_iterator<int>(std::cerr, " ")));
-        DBGN(cerr << endl);
+        // target-grid dimensions
+        vector<int> indices = find_value_indices(tuple, dim_value_vecs);
+        DBG(cerr << "indices: "); DBGN(copy(indices.begin(), indices.end(), ostream_iterator<int>(std::cerr, " "))); DBGN(cerr << endl);
 
         // if all of the indices are >= 0, then add this point to the mask
         if (all_indices_valid(indices)) {
 
-	    // Pass identified indices to Odometer, it will automatically
-	    // calculate offset within defined 'shape' using those index values.
-	    // Result of set_indices() will update d_offset value, accessible
-	    // using the Odometer::offset() accessor.
-	    for (std::vector<int>::const_iterator i=indices.begin(); i != indices.end(); i+=2) {
-		xLoc.push_back( *i );
-		yLoc.push_back( *(i+1) );
-	    }
+            // Pass identified indices to Odometer, it will automatically
+            // calculate offset within defined 'shape' using those index values.
+            // Result of set_indices() will update d_offset value, accessible
+            // using the Odometer::offset() accessor.
+            xLoc.at(n) = (*indices.begin());
+            yLoc.at(n) = (*(indices.begin()+1));
+#if 0
+            // for (std::vector<int>::const_iterator i = indices.begin(); i != indices.end(); i += 2) {
+                xLoc.push_back(*indices.begin());
+                yLoc.push_back(*(indices.begin() + 1));
+            //}
+#endif
         }
     }
 
@@ -170,66 +169,65 @@ vector< vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Arr
     float factorX, factorY, d;
 
     std::vector<int>::iterator xDx, xEnd, xStart;
-    xEnd = xLoc.end(); 
+    xEnd = xLoc.end();
     xStart = xLoc.begin();
 
     std::vector<int>::iterator yDx, yEnd, yStart;
-    yEnd = yLoc.end(); 
+    yEnd = yLoc.end();
     yStart = yLoc.begin();
 
-    vector< vector<int> > result;
+    vector<vector<int> > result;
 
-    for (xDx = xLoc.begin(),yDx = yLoc.begin(); xDx != xLoc.end() && yDx != yLoc.end(); ++xDx, ++yDx) {
-    //for (int i = segStart; i < segEnd; i++ ) {
+    for (xDx = xLoc.begin(), yDx = yLoc.begin(); xDx != xLoc.end() && yDx != yLoc.end(); ++xDx, ++yDx) {
+        //for (int i = segStart; i < segEnd; i++ ) {
 
-	if ( xLoc.size() < 5 ) {    // Granted this is loop-invariant, but easier to read if inside loop and it's only 5 iterations.
-	    deltaX = *xEnd - *xStart;	    //deltaX = xLocation[segEnd] - xLocation[segStart];
-	    deltaY = *yEnd - *yStart;	    //deltaY = yLocation[segEnd] - yLocation[segStart];
-	}
-	else if ( xDx < xStart+2 ) {	            //else if ( i < (segStart + 2) ) {
-	    deltaX = *(xStart+3) - *xStart;	    //deltaY = yLocation[segStart + 3] - yLocation[segStart];
-	    deltaY = *(yStart+3) - *yStart;	    //deltaX = xLocation[segStart + 3] - xLocation[segStart];
-	}
-	else if ( xDx > xEnd+2 ) {	            //else if ( i > (segEnd + 2) ) {
-	    deltaX = *xEnd - *(xEnd - 3);	    //deltaX = xLocation[segEnd] - xLocation[segEnd -3];
-	    deltaY = *yEnd - *(yEnd - 3);	    //deltaY = yLocation[segEnd] - yLocation[segEnd -3];
-	}
-	else {
-	    deltaX = *(xDx+2) - *(xDx-2); 	    //deltaX = xLocation[i+2] - xLocation[i-2];
-	    deltaY = *(yDx+2) - *(yDx-2); 	    //deltaY = yLocation[i+2] - yLocation[i-2];
-	}
+        if (xLoc.size() < 5) { // Granted this is loop-invariant, but easier to read if inside loop and it's only 5 iterations.
+            deltaX = *xEnd - *xStart;	    //deltaX = xLocation[segEnd] - xLocation[segStart];
+            deltaY = *yEnd - *yStart;	    //deltaY = yLocation[segEnd] - yLocation[segStart];
+        }
+        else if (xDx < xStart + 2) {	            //else if ( i < (segStart + 2) ) {
+            deltaX = *(xStart + 3) - *xStart;	    //deltaY = yLocation[segStart + 3] - yLocation[segStart];
+            deltaY = *(yStart + 3) - *yStart;	    //deltaX = xLocation[segStart + 3] - xLocation[segStart];
+        }
+        else if (xDx > xEnd + 2) {	            //else if ( i > (segEnd + 2) ) {
+            deltaX = *xEnd - *(xEnd - 3);	    //deltaX = xLocation[segEnd] - xLocation[segEnd -3];
+            deltaY = *yEnd - *(yEnd - 3);	    //deltaY = yLocation[segEnd] - yLocation[segEnd -3];
+        }
+        else {
+            deltaX = *(xDx + 2) - *(xDx - 2); 	    //deltaX = xLocation[i+2] - xLocation[i-2];
+            deltaY = *(yDx + 2) - *(yDx - 2); 	    //deltaY = yLocation[i+2] - yLocation[i-2];
+        }
 
-	d = sqrt(deltaX * deltaX + deltaY * deltaY);
-	
-	factorX = deltaX / d;
-	factorY = deltaY / d;
+        d = sqrt(deltaX * deltaX + deltaY * deltaY);
 
-	vector<int> CF_offsets;
+        factorX = deltaX / d;
+        factorY = deltaY / d;
 
-	for (int ip = -cfPixels; ip < cfPixels; ip++) {   // cfPixels ranges from -7 to +7
-	    mp1 = min((int)xLoc.size(), max(1,((int)(*xDx - round(ip * factorX)))));
-	    np1 = min((int)yLoc.size(), max(1,((int)(*yDx - round(ip * factorY))))); //np1 = min(lenY, max(1,(yLocation[i]- round(ip * factorY)))); 
-	    //jp = ip + cfPixels + 1;  // jp index ranges from 0 ==> 15;
+        vector<int> CF_offsets;
 
-	    vector<int> CF_Locs;
+        for (int ip = -cfPixels; ip < cfPixels; ip++) {   // cfPixels ranges from -7 to +7
+            mp1 = min((int) xLoc.size(), max(1, ((int) (*xDx - round(ip * factorX)))));
+            np1 = min((int) yLoc.size(), max(1, ((int) (*yDx - round(ip * factorY))))); //np1 = min(lenY, max(1,(yLocation[i]- round(ip * factorY))));
+            //jp = ip + cfPixels + 1;  // jp index ranges from 0 ==> 15;
 
-	    // Find normalized X/Y's to tuple location 
-	    
-	    CF_Locs.push_back( mp1 - *xDx );  //CFmLocation[jp] = mp1 - xLocation[i];
-	    CF_Locs.push_back( np1 - *yDx );  //CFnLocation[jp] = np1 = yLocation[i];
+            vector<int> CF_Locs;
 
-	    odometer.set_indices(CF_Locs);    // Find offset of normalized point.
-	    DBG(cerr << "odometer.offset(): " << odometer.offset() << endl);
-	    
-	    CF_offsets.push_back(odometer.offset());  // Store target array offset for normalized point
-	}
+            // Find normalized X/Y's to tuple location
 
-	result.push_back(CF_offsets);  // Store all 15 normalized points in result
+            CF_Locs.push_back(mp1 - *xDx);  //CFmLocation[jp] = mp1 - xLocation[i];
+            CF_Locs.push_back(np1 - *yDx);  //CFnLocation[jp] = np1 = yLocation[i];
+
+            odometer.set_indices(CF_Locs);    // Find offset of normalized point.
+            DBG(cerr << "odometer.offset(): " << odometer.offset() << endl);
+
+            CF_offsets.push_back(odometer.offset());  // Store target array offset for normalized point
+        }
+
+        result.push_back(CF_offsets);  // Store all 15 normalized points in result
     }
 
     return result;
 }
-
 
 /** Given a ...
 
@@ -253,7 +251,7 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
     DBG(cerr << "argc = " << argc << endl);
     if (argc < 3)
         throw Error(malformed_expr,
-		    "make_normalized_mask(shape_string,[dim1,...],$TYPE(dim1_value0,dim2_value0,...)) requires at least three arguments.");
+            "make_normalized_mask(shape_string,[dim1,...],$TYPE(dim1_value0,dim2_value0,...)) requires at least three arguments.");
 
     if (argv[0]->type() != dods_str_c)
         throw Error(malformed_expr, "make_normalized_mask(): first argument must point to a string variable.");
@@ -266,7 +264,7 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
     // read argv[1] -> argv[1+numberOfDims]; the grid dimensions where we will find the values                                                                
     // of the mask tuples. Also note that the number of dims (shape.size() above) should be the                                                               
     // same as argc-2.                                                                                                                                        
-    assert(nDims == (unsigned int)argc-2);
+    assert(nDims == (unsigned int )argc - 2);
 
     // string requestedTargetName = extract_string_argument(argv[0]);
     // BESDEBUG("functions", "Requested target variable: " << requestedTargetName << endl);
@@ -281,7 +279,7 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
         btp = argv[1 + i];
         if (btp->type() != dods_array_c) {
             throw Error(malformed_expr,
-                    "make_normalized_mask(): dimension-name arguments must point to Grid variable dimensions.");
+                "make_normalized_mask(): dimension-name arguments must point to Grid variable dimensions.");
         }
 
         Array *a = static_cast<Array*>(btp);
@@ -309,7 +307,7 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
 
     // Create the 'normalization_mask' array using the number of input tuples times 15, to represent a 2-dimensional array size [15][n-tuples].
 
-    vector< vector<int> > mask;
+    vector<vector<int> > mask;
 
     switch (tuples->var()->type()) {
     // All mask values are stored in Byte DAP variables by the stock argument parser
@@ -339,21 +337,21 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
         break;
 
     case dods_float64_c:
-        mask  = make_normalized_mask_helper<dods_float64>(dims, tuples);
+        mask = make_normalized_mask_helper<dods_float64>(dims, tuples);
         break;
 
     case dods_str_c:
     case dods_url_c:
     default:
         throw InternalErr(__FILE__, __LINE__,
-                "make_normalized_mask(): Expect an array of mask points (numbers) but found something else instead.");
+            "make_normalized_mask(): Expect an array of mask points (numbers) but found something else instead.");
     }
 
     // BESDEBUG("function", "function_dap2_make_mask() -target " << requestedTargetName << " -nDims " << nDims << endl);
 
     vector<int> normalizedMask;
 
-    vector< vector<int> >::const_iterator row;
+    vector<vector<int> >::const_iterator row;
 
     int i = 0;
     for (row = mask.begin(); row != mask.end(); ++row) {
@@ -363,7 +361,7 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
         cerr << "Row length is " << col_end - col << endl;
         std::copy(col, col_end, std::back_inserter(normalizedMask));
     }
-    
+
     cerr << "normalizedMask: ";
     std::copy(normalizedMask.begin(), normalizedMask.end(), std::ostream_iterator<int>(std::cerr, " "));
     cerr << endl;
@@ -371,11 +369,11 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
     Array *dest = new Array("mask", 0);	// The ctor for Array copies the prototype pointer...
     // Not used BaseTypeFactory btf;
     dest->add_var_nocopy(new Int32("mask"));	// ... so use add_var_nocopy() to add it instead
-    
+
     dest->append_dim(mask.size());              // set dimensions to 2d mask.sizes()
     dest->append_dim(mask.at(0).size());
 
-    dest->set_value(normalizedMask, normalizedMask.size()); 
+    dest->set_value(normalizedMask, normalizedMask.size());
     dest->set_read_p(true);
     *btpp = dest;
 }
