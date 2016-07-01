@@ -286,13 +286,13 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
 
         Array *a = static_cast<Array*>(btp);
 
-	// Check that each map size matches the 'shape' info passed in the first arg.                                                                         
+        // Check that each map size matches the 'shape' info passed in the first arg.
         // This might not be the case for DAP4 (or if we change this to support level                                                                         
         // 2 swath data).                                                                                                                                     
         assert(a->dimension_size(a->dim_begin()) == shape.at(i));
 
         a->read();
-	a->set_read_p(true);
+        a->set_read_p(true);
         dims.push_back(a);
     }
 
@@ -355,13 +355,22 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
 
     vector< vector<int> >::const_iterator row;
 
+    int i = 0;
     for (row = mask.begin(); row != mask.end(); ++row) {
-	std::copy(row->begin(), row->end(), std::back_inserter(normalizedMask));
+        // row is an iterator that returns a vector<int>
+        vector<int>::const_iterator col = row->begin(), col_end = row->end();
+        cerr << "Transferring row # " << i++ << endl;
+        cerr << "Row length is " << col_end - col << endl;
+        std::copy(col, col_end, std::back_inserter(normalizedMask));
     }
     
+    cerr << "normalizedMask: ";
+    std::copy(normalizedMask.begin(), normalizedMask.end(), std::ostream_iterator<int>(std::cerr, " "));
+    cerr << endl;
+
     Array *dest = new Array("mask", 0);	// The ctor for Array copies the prototype pointer...
-    BaseTypeFactory btf;
-    dest->add_var_nocopy(new UInt32("mask"));	// ... so use add_var_nocopy() to add it instead
+    // Not used BaseTypeFactory btf;
+    dest->add_var_nocopy(new Int32("mask"));	// ... so use add_var_nocopy() to add it instead
     
     dest->append_dim(mask.size());              // set dimensions to 2d mask.sizes()
     dest->append_dim(mask.at(0).size());
@@ -369,7 +378,6 @@ void function_dap2_make_normalized_mask(int argc, BaseType * argv[], DDS &, Base
     dest->set_value(normalizedMask, normalizedMask.size()); 
     dest->set_read_p(true);
     *btpp = dest;
-
 }
 
 } // namespace functions
