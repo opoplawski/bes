@@ -207,9 +207,13 @@ vector<vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Arra
 
         for (int ip = -cfPixels; ip < cfPixels; ip++) {   // cfPixels ranges from -7 to +7
             mp1 = min((int) xLoc.size(), max(1, ((int) (*xDx - round(ip * factorX)))));
-            np1 = min((int) yLoc.size(), max(1, ((int) (*yDx - round(ip * factorY))))); //np1 = min(lenY, max(1,(yLocation[i]- round(ip * factorY))));
+            np1 = min((int) yLoc.size(), max(1, ((int) (*yDx - round(ip * factorY)))));
+            //np1 = min(lenY, max(1,(yLocation[i]- round(ip * factorY))));
             //jp = ip + cfPixels + 1;  // jp index ranges from 0 ==> 15;
 
+            // This is a total hack... it's for the test case where we're working
+            // with where the data are 6144 x 6144.
+#if 0
             vector<int> CF_Locs;
 
             // Find normalized X/Y's to tuple location
@@ -221,6 +225,9 @@ vector<vector<int> > make_normalized_mask_helper(const vector<Array*> dims, Arra
             DBG(cerr << "odometer.offset(): " << odometer.offset() << endl);
 
             CF_offsets.push_back(odometer.offset());  // Store target array offset for normalized point
+#endif
+            CF_offsets.push_back((mp1 - *xDx) * 6144 + (np1 - *yDx));
+            DBG(cerr << "offset(): " << (mp1 - *xDx) * 6144 + (np1 - *yDx) << endl);
         }
 
         result.push_back(CF_offsets);  // Store all 15 normalized points in result
