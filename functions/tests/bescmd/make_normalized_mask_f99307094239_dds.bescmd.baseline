@@ -1,0 +1,5 @@
+Dataset {
+    UInt32 dsp_band_1[lat = 6144][lon = 6144];
+    Float64 lat[lat = 6144];
+    Float64 lon[lon = 6144];
+} f99307094239.hdf;
