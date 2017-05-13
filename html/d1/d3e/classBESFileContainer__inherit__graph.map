@@ -1,0 +1,4 @@
+<map id="BESFileContainer" name="BESFileContainer">
+<area shape="rect" id="node2" href="$d2/d74/classBESContainer.html" title="A container is something that holds data. I.E. a netcdf file or a database entry. ..." alt="" coords="60,140,223,400"/>
+<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="93,5,190,92"/>
+</map>

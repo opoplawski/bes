@@ -1,0 +1,4 @@
+<map id="AbstractDataset" name="AbstractDataset">
+<area shape="rect" id="node2" href="$d7/d62/classlibdap_1_1DAP__Dataset.html" title="DAP_Dataset is a subclass of AbstractDataset, used to process NOAA GOES data. " alt="" coords="5,513,177,853"/>
+<area shape="rect" id="node3" href="$d7/df2/classNC__GOES__Dataset.html" title="NC_GOES_Dataset is a subclass of AbstractDataset, used to process NOAA GOES data. ..." alt="" coords="202,473,418,893"/>
+</map>

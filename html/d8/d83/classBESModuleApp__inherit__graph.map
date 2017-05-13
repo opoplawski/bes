@@ -1,0 +1,7 @@
+<map id="BESModuleApp" name="BESModuleApp">
+<area shape="rect" id="node5" href="$d7/d63/classServerApp.html" title="{ServerApp\n||+ dump()\l+ initialize()\l+ run()\l+ ServerApp()\l+ terminate()\l+ ~ServerApp()\l}" alt="" coords="5,791,118,931"/>
+<area shape="rect" id="node6" href="$d6/df6/classStandAloneApp.html" title="{StandAloneApp\n||+ client()\l+ dump()\l+ initialize()\l+ run()\l+ StandAloneApp()\l+ terminate()\l+ ~StandAloneApp()\l}" alt="" coords="141,784,283,937"/>
+<area shape="rect" id="node2" href="$d2/dd9/classBESBaseApp.html" title="Base application object for all BES applications. " alt="" coords="71,408,201,561"/>
+<area shape="rect" id="node3" href="$d6/da3/classBESApp.html" title="Application class for BES applications. " alt="" coords="71,140,201,360"/>
+<area shape="rect" id="node4" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="88,5,185,92"/>
+</map>

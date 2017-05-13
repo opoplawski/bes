@@ -1,0 +1,6 @@
+<map id="PPTConnection" name="PPTConnection">
+<area shape="rect" id="node4" href="$dc/d2a/classPPTClient.html" title="{PPTClient\n||+ closeConnection()\l+ dump()\l+ initConnection()\l+ PPTClient()\l+ PPTClient()\l+ ~PPTClient()\l}" alt="" coords="5,796,146,936"/>
+<area shape="rect" id="node5" href="$d6/d8f/classPPTServer.html" title="{PPTServer\n||+ closeConnection()\l+ decr_num_children()\l+ dump()\l+ get_num_children()\l+ incr_num_children()\l+ initConnection()\l+ PPTServer()\l+ ~PPTServer()\l}" alt="" coords="170,783,325,949"/>
+<area shape="rect" id="node2" href="$d0/db7/classConnection.html" title="{Connection\n|# _brokenPipe\l# _mySock\l# _out\l|+ brokenPipe()\l+ closeConnection()\l+ dump()\l+ exit()\l+ getOutputStream()\l+ getRecvChunkSize()\l+ getSendChunkSize()\l+ getSocket()\l+ initConnection()\l+ isConnected()\land 6 more...\l# Connection()\l# send()\l# sendChunk()\l}" alt="" coords="83,140,239,413"/>
+<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="112,5,209,92"/>
+</map>

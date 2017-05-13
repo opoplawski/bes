@@ -1,0 +1,9 @@
+<map id="Connection" name="Connection">
+<area shape="rect" id="node3" href="$db/df1/classPPTConnection.html" title="{PPTConnection\n||+ closeConnection()\l+ dump()\l+ exit()\l+ getRecvChunkSize()\l+ getSendChunkSize()\l+ initConnection()\l+ receive()\l+ send()\l+ sendExit()\l+ sendExtensions()\l+ ~PPTConnection()\l# PPTConnection()\l# read_extensions()\l# readBuffer()\l# readBufferNonBlocking()\l# send()\l}" alt="" coords="152,461,330,735"/>
+<area shape="rect" id="node6" href="$d6/d5b/classSSLConnection.html" title="{SSLConnection\n|# _connected\l# _connection\l# _context\l# _method\l|+ closeConnection()\l+ dump()\l+ exit()\l+ getRecvChunkSize()\l+ getSendChunkSize()\l+ receive()\l+ send()\l+ sendExit()\l+ sendExtensions()\l+ SSLConnection()\l+ ~SSLConnection()\l# send()\l# sendChunk()\l}" alt="" coords="354,461,509,735"/>
+<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="287,5,384,92"/>
+<area shape="rect" id="node4" href="$dc/d2a/classPPTClient.html" title="{PPTClient\n||+ closeConnection()\l+ dump()\l+ initConnection()\l+ PPTClient()\l+ PPTClient()\l+ ~PPTClient()\l}" alt="" coords="5,796,146,936"/>
+<area shape="rect" id="node5" href="$d6/d8f/classPPTServer.html" title="{PPTServer\n||+ closeConnection()\l+ decr_num_children()\l+ dump()\l+ get_num_children()\l+ incr_num_children()\l+ initConnection()\l+ PPTServer()\l+ ~PPTServer()\l}" alt="" coords="170,783,325,949"/>
+<area shape="rect" id="node7" href="$d0/dc8/classSSLClient.html" title="{SSLClient\n||+ dump()\l+ initConnection()\l+ SSLClient()\l+ ~SSLClient()\l}" alt="" coords="355,809,481,923"/>
+<area shape="rect" id="node8" href="$d1/dc8/classSSLServer.html" title="{SSLServer\n||+ dump()\l+ initConnection()\l+ SSLServer()\l+ ~SSLServer()\l}" alt="" coords="506,809,632,923"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="SSLConnection" name="SSLConnection">
+<area shape="rect" id="node4" href="$d0/dc8/classSSLClient.html" title="{SSLClient\n||+ dump()\l+ initConnection()\l+ SSLClient()\l+ ~SSLClient()\l}" alt="" coords="5,783,132,896"/>
+<area shape="rect" id="node5" href="$d1/dc8/classSSLServer.html" title="{SSLServer\n||+ dump()\l+ initConnection()\l+ SSLServer()\l+ ~SSLServer()\l}" alt="" coords="156,783,282,896"/>
+<area shape="rect" id="node2" href="$d0/db7/classConnection.html" title="{Connection\n|# _brokenPipe\l# _mySock\l# _out\l|+ brokenPipe()\l+ closeConnection()\l+ dump()\l+ exit()\l+ getOutputStream()\l+ getRecvChunkSize()\l+ getSendChunkSize()\l+ getSocket()\l+ initConnection()\l+ isConnected()\land 6 more...\l# Connection()\l# send()\l# sendChunk()\l}" alt="" coords="65,140,221,413"/>
+<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="95,5,192,92"/>
+</map>

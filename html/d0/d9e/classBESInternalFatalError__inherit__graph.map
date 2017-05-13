@@ -1,0 +1,6 @@
+<map id="BESInternalFatalError" name="BESInternalFatalError">
+<area shape="rect" id="node4" href="$dc/d2a/classNoSuchLibrary.html" title="{NoSuchLibrary\n||+ NoSuchLibrary()\l}" alt="" coords="5,583,135,656"/>
+<area shape="rect" id="node5" href="$de/d53/classNoSuchObject.html" title="{NoSuchObject\n||+ NoSuchObject()\l}" alt="" coords="160,583,287,656"/>
+<area shape="rect" id="node2" href="$d7/dbd/classBESError.html" title="Abstract exception class for the BES with basic string message. " alt="" coords="82,140,210,373"/>
+<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="98,5,195,92"/>
+</map>

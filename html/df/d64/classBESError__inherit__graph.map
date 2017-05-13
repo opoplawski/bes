@@ -1,0 +1,12 @@
+<map id="BESError" name="BESError">
+<area shape="rect" id="node3" href="$d0/d76/classBESDapError.html" title="error object created from libdap error objects and can handle those errors " alt="" coords="5,421,163,575"/>
+<area shape="rect" id="node4" href="$dd/d7d/classBESForbiddenError.html" title="error thrown if the BES is not allowed to access the resource requested " alt="" coords="186,441,352,555"/>
+<area shape="rect" id="node5" href="$d9/d82/classBESInternalError.html" title="exception thrown if inernal error encountered " alt="" coords="377,441,527,555"/>
+<area shape="rect" id="node6" href="$d5/d0f/classBESInternalFatalError.html" title="exception thrown if an internal error is found and is fatal to the BES " alt="" coords="551,441,731,555"/>
+<area shape="rect" id="node9" href="$dc/d1a/classBESNotFoundError.html" title="error thrown if the resource requested cannot be found " alt="" coords="755,441,920,555"/>
+<area shape="rect" id="node10" href="$db/d8a/classBESSyntaxUserError.html" title="error thrown if there is a user syntax error in the request or any other user error ..." alt="" coords="943,441,1118,555"/>
+<area shape="rect" id="node11" href="$dc/d53/classBESTimeoutError.html" title="error thrown if there is a user syntax error in the request or any other user error ..." alt="" coords="1142,441,1295,555"/>
+<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="593,5,690,92"/>
+<area shape="rect" id="node7" href="$dc/d2a/classNoSuchLibrary.html" title="{NoSuchLibrary\n||+ NoSuchLibrary()\l}" alt="" coords="500,623,630,696"/>
+<area shape="rect" id="node8" href="$de/d53/classNoSuchObject.html" title="{NoSuchObject\n||+ NoSuchObject()\l}" alt="" coords="655,623,782,696"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="ServerHandler" name="ServerHandler">
+<area shape="rect" id="node3" href="$dd/de6/classBESServerHandler.html" title="{BESServerHandler\n||+ BESServerHandler()\l+ dump()\l+ handle()\l+ ~BESServerHandler()\l}" alt="" coords="5,315,167,428"/>
+<area shape="rect" id="node4" href="$d2/d8f/classDaemonCommandHandler.html" title="{DaemonCommandHandler\n||+ DaemonCommandHandler()\l+ dump()\l+ get_config_file()\l+ handle()\l+ set_config_file()\l+ ~DaemonCommandHandler()\l}" alt="" coords="192,301,400,441"/>
+<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="142,5,239,92"/>
+</map>
