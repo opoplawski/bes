@@ -1,14 +1,15 @@
 
 # Tests
 
-AUTOMAKE_OPTIONS = foreign subdir-objects
+AUTOMAKE_OPTIONS = foreign 
+
+# Removed jhrg 9.22.17 in an attempt to fix distcheck's build
+# subdir-objects
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
-AM_CPPFLAGS = -I$(top_srcdir)/dispatch -I$(top_srcdir)/functions $(GF_CFLAGS) $(XML2_CFLAGS) $(DAP_CFLAGS)
+AM_CPPFLAGS = $(BES_CPPFLAGS) -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap -I$(top_srcdir)/functions $(DAP_CFLAGS) $(GDAL_CFLAGS)
 AM_LDADD =  $(DAP_SERVER_LIBS) $(GF_LIBS) $(top_builddir)/dispatch/libbes_dispatch.la
-#-L.. -lfunctions_module  
-# ../libfunctions_module.la
 
 if CPPUNIT
 AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
@@ -32,9 +33,9 @@ TESTS = $(UNIT_TESTS)
 
 noinst_HEADERS = test_config.h
 
-EXTRA_DIST = test_config.h.in ce-functions-testsuite tabular
+EXTRA_DIST = test_config.h.in ce-functions-testsuite tabular scale
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno
+CLEANFILES = testout .dodsrc *.gcda *.gcno
 
 # I added '*.po' because there are dependencies on ../*.o files and
 # that seems to leave *.Po files here that distclean complains about.
@@ -54,12 +55,13 @@ test_config.h: test_config.h.in Makefile
 if CPPUNIT
 UNIT_TESTS = CEFunctionsTest GridGeoConstraintTest Dap4_CEFunctionsTest \
 TabularFunctionTest BBoxFunctionTest RoiFunctionTest BBoxUnionFunctionTest \
-OdometerTest MaskArrayFunctionTest MakeMaskFunctionTest MakeNormalizedMaskFunctionTest
+OdometerTest MaskArrayFunctionTest MakeMaskFunctionTest ScaleUtilTest \
+ScaleUtilTest3D RangeFunctionTest MakeNormalizedMaskFunctionTest
 
 # Dap4_TabularFunctionTest Removed since the DAP2 code has moved so far 
 # in front of the DAP4 version, which has had virtually no testing.
 # jhrg 3/12/15
-	
+
 else
 UNIT_TESTS =
 
@@ -122,6 +124,18 @@ MaskArrayFunctionTest_LDADD = $(MaskArrayFunctionTest_OBJ) $(TEST_OBJ) $(AM_LDAD
 MakeMaskFunctionTest_OBJ = ../MakeMaskFunction.o
 MakeMaskFunctionTest_SOURCES = MakeMaskFunctionTest.cc $(TEST_SRC)
 MakeMaskFunctionTest_LDADD = $(MakeMaskFunctionTest_OBJ) $(TEST_OBJ) $(AM_LDADD) -ltest-types $(DAP_LIBS)
+
+ScaleUtilTest_SOURCES = ScaleUtilTest.cc ../scale_util.cc $(TEST_SRC)
+ScaleUtilTest_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
+ScaleUtilTest_LDADD = $(TEST_OBJ) -ltest-types $(AM_LDADD) $(GDAL_LDFLAGS)
+
+ScaleUtilTest3D_SOURCES = ScaleUtilTest3D.cc ../scale_util.cc $(TEST_SRC)
+ScaleUtilTest3D_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
+ScaleUtilTest3D_LDADD = $(TEST_OBJ) -ltest-types $(AM_LDADD) $(GDAL_LDFLAGS)
+
+RangeFunctionTest_SOURCES = RangeFunctionTest.cc ../RangeFunction.cc $(TEST_SRC)
+RangeFunctionTest_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
+RangeFunctionTest_LDADD = -ltest-types $(AM_LDADD)
 
 MakeNormalizedMaskFunctionTest_OBJ = ../MakeNormalizedMaskFunction.o
 MakeNormalizedMaskFunctionTest_SOURCES = MakeNormalizedMaskFunctionTest.cc $(TEST_SRC)

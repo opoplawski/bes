@@ -30,11 +30,15 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include <iostream>
+
 #include "BESXMLCommand.h"
 #include "BESResponseHandlerList.h"
 #include "BESSyntaxUserError.h"
 #include "BESDataNames.h"
 #include "BESLog.h"
+
+using std::flush;
 
 map<string, p_xmlcmd_builder> BESXMLCommand::cmd_list;
 
@@ -47,7 +51,7 @@ map<string, p_xmlcmd_builder> BESXMLCommand::cmd_list;
  */
 BESXMLCommand::BESXMLCommand(const BESDataHandlerInterface &base_dhi)
 {
-    _dhi.make_copy(base_dhi);
+    d_xmlcmd_dhi.make_copy(base_dhi);
 }
 
 /** @brief The request has been parsed, use the command action name to
@@ -55,20 +59,16 @@ BESXMLCommand::BESXMLCommand(const BESDataHandlerInterface &base_dhi)
  */
 void BESXMLCommand::set_response()
 {
-    _dhi.response_handler = BESResponseHandlerList::TheList()->find_handler(_dhi.action);
-    if (!_dhi.response_handler) {
-        throw BESSyntaxUserError(string("Command '") + _dhi.action + "' does not have a registered response handler",
-            __FILE__, __LINE__);
+    d_xmlcmd_dhi.response_handler = BESResponseHandlerList::TheList()->find_handler(d_xmlcmd_dhi.action);
+    if (!d_xmlcmd_dhi.response_handler) {
+        throw BESSyntaxUserError(string("Command '") + d_xmlcmd_dhi.action + "' does not have a registered response handler",
+                                 __FILE__, __LINE__);
     }
 
-    // The _str_cmd is a text version of the xml command used for the log.
-    // It is not used for anything else. I think the 'sql like' syntax is
-    // actually no longer used by the BES and that the software in cmdln
-    // translates that syntax into XML. But I'm not 100% sure... jhrg 12/29/15
-    _dhi.data[DATA_REQUEST] = _str_cmd;
+    d_xmlcmd_dhi.data[LOG_INFO] = d_cmd_log_info;
 
-    *(BESLog::TheLog()) << _dhi.data[SERVER_PID] << " from " << _dhi.data[REQUEST_FROM] << " [" << _str_cmd
-        << "] received" << endl;
+    VERBOSE(/*d_xmlcmd_dhi.data[SERVER_PID] << " from " <<*/ d_xmlcmd_dhi.data[REQUEST_FROM] << " ["
+            << d_xmlcmd_dhi.data[LOG_INFO] << "] parsed" << endl);
 }
 
 /** @brief Add a command to the possible commands allowed by this BES

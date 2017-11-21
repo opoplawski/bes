@@ -1,0 +1,16 @@
+/var/log/bes/*log {
+    daily
+
+    # copytruncate is important because we want to rotate logs
+    # without stopping the BES (which requires synchronized
+    # restart of the OLFS). 11/15/17
+    copytruncate
+    rotate 8
+    
+    missingok
+    notifempty
+    sharedscripts
+    
+    compress
+    delaycompress
+}
