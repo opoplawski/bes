@@ -30,11 +30,16 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include <time.h>       /* time_t, struct tm, difftime, time, mktime */
+
+#include <sstream>
+
 #include "BESExceptionManager.h"
 
 #include "BESError.h"
 #include "TheBESKeys.h"
 #include "BESInfoList.h"
+#include "BESLog.h"
 
 #define DEFAULT_ADMINISTRATOR "support@opendap.org"
 
@@ -66,6 +71,80 @@ void BESExceptionManager::add_ehm_callback(p_bes_ehm ehm)
     _ehm_list.push_back(ehm);
 }
 
+/**
+ * Writes a message about the passed in BESError to the
+ * BESLog.
+ */
+void log_error(BESError &e)
+{
+#if 0
+    struct tm *ptm;
+    time_t timer = time(NULL);
+    ptm = gmtime(&timer);
+    string now(asctime(ptm));
+    now = now.substr(0, now.length() - 1); // drop \n from end of string
+#endif
+
+    string error_name = "";
+    // TODO This should be configurable; I'm changing the values below to always log all errors.
+    // I'm also confused about the actual intention. jhrg 11/14/17
+    bool only_log_to_verbose = false;
+    switch (e.get_error_type()) {
+    case BES_INTERNAL_FATAL_ERROR:
+        error_name = "BES Internal Fatal Error";
+        break;
+
+    case BES_INTERNAL_ERROR:
+        error_name = "BES Internal Error";
+        break;
+
+    case BES_SYNTAX_USER_ERROR:
+        error_name = "BES User Syntax Error";
+        only_log_to_verbose = false; // TODO Was 'true.' jhrg 11/14/17
+        break;
+
+    case BES_FORBIDDEN_ERROR:
+        error_name = "BES Forbidden Error";
+        break;
+
+    case BES_NOT_FOUND_ERROR:
+        error_name = "BES Not Found Error";
+        only_log_to_verbose = false; // TODO was 'true.' jhrg 11/14/17
+        break;
+
+    default:
+        error_name = "Unrecognized BES Error";
+        break;
+    }
+
+#if 0
+    string m = BESLog::mark;
+    std::ostringstream msg;
+    msg << "ERROR: " << error_name << m << "type: " << e.get_error_type() << m << "file: " << e.get_file() << m
+        << "line: " << e.get_line() << m << "message: " << e.get_message();
+#endif
+
+    if (only_log_to_verbose) {
+        VERBOSE("ERROR: " << error_name << ", type: " << e.get_error_type() << ", file: " << e.get_file() << ":"
+                << e.get_line()  << ", message: " << e.get_message() << endl);
+#if 0
+            // This seems buggy - if you don't flush the
+            // log it won't print the time correctly.
+            BESLog::TheLog()->flush_me();
+            *(BESLog::TheLog()) << msg.str() << endl;
+            BESLog::TheLog()->flush_me();
+#endif
+    }
+    else {
+        LOG("ERROR: " << error_name << ": " << e.get_message() << endl);
+#if 0
+        BESLog::TheLog()->flush_me();
+        *(BESLog::TheLog()) << msg.str() << endl;
+        BESLog::TheLog()->flush_me();
+#endif
+    }
+}
+
 /** @brief Manage any exceptions thrown during the handling of a request
 
  An informational object should be created and assigned to
@@ -80,7 +159,7 @@ void BESExceptionManager::add_ehm_callback(p_bes_ehm ehm)
  is to create an informational object (BESInfo instance) and the exception
  information stored there.
 
- @param e excption to be managed
+ @param e exception to be managed
  @param dhi information related to request and response
  @return status after exception is handled
  @see BESError
@@ -90,8 +169,8 @@ int BESExceptionManager::handle_exception(BESError &e, BESDataHandlerInterface &
 {
     // Let's see if any of these exception callbacks can handle the
     // exception. The first callback that can handle the exception wins
-    ehm_iter i = _ehm_list.begin();
-    for (; i != _ehm_list.end(); i++) {
+
+    for (ehm_iter i = _ehm_list.begin(), ei = _ehm_list.end(); i != ei; ++i) {
         p_bes_ehm p = *i;
         int handled = p(e, dhi);
         if (handled) {
@@ -101,7 +180,7 @@ int BESExceptionManager::handle_exception(BESError &e, BESDataHandlerInterface &
 
     dhi.error_info = BESInfoList::TheList()->build_info();
     string action_name = dhi.action_name;
-    if (action_name == "") action_name = "BES";
+    if (action_name.empty()) action_name = "BES";
     dhi.error_info->begin_response(action_name, dhi);
 
     string administrator = "";
@@ -119,6 +198,10 @@ int BESExceptionManager::handle_exception(BESError &e, BESDataHandlerInterface &
     }
     dhi.error_info->add_exception(e, administrator);
     dhi.error_info->end_response();
+
+    // Write a message in the log file about this error...
+    log_error(e);
+
     return e.get_error_type();
 }
 

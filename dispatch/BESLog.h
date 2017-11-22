@@ -38,8 +38,24 @@
 
 // Note that the BESLog::operator<<() methods will prefix output with
 // the time and PID by checking for the flush and endl stream operators.
-#define LOG(x) do { *(BESLog::TheLog()) << x ; } while( 0 )
-#define VERBOSE(x) do { if (BESLog::TheLog()->is_verbose()) *(BESLog::TheLog()) << x ; } while( 0 )
+//
+// TRACE_LOGGING provides a way to see just where in the code the log info
+// is written from. jhrg 11/14/17
+
+#undef TRACE_LOGGING
+
+#ifdef TRACE_LOGGING
+#define LOG(x) do { *(BESLog::TheLog()) << __FILE__ << ":" << __LINE__ << " - " << x ; BESLog::TheLog()->flush_me() ; } while( 0 )
+#define VERBOSE(x) do { if (BESLog::TheLog()->is_verbose()) *(BESLog::TheLog()) << __FILE__ << ":" << __LINE__ << " - " << x ; BESLog::TheLog()->flush_me() ; } while( 0 )
+#else
+#define LOG(x) do { *(BESLog::TheLog()) << x ; BESLog::TheLog()->flush_me() ; } while( 0 )
+#define VERBOSE(x) do { if (BESLog::TheLog()->is_verbose()) *(BESLog::TheLog()) << x ; BESLog::TheLog()->flush_me() ; } while( 0 )
+#endif
+
+// Pretty silly - for now ERROR is the same as LOG, but I suspect that we might
+// want to treat errors differently in the near future given the special logging
+// needs of the 'Hyrax in the Cloud' project. jhrg 11/16/17
+#define ERROR(x) LOG(x)
 
 #include "BESObj.h"
 
@@ -82,18 +98,24 @@
  * BESLog provides a static method for access to a single BESLog object,
  * TheLog.
  *
- * @see BESKeys
+ * @see TheBESKeys
  */
 class BESLog: public BESObj {
 private:
-    static BESLog * _instance;
-    int _flushed;
-    std::ofstream * _file_buffer;
-    std::string _file_name;
+    static BESLog * d_instance;
+
+    int d_flushed;
+    std::ofstream * d_file_buffer;
+    std::string d_file_name;
+
     // Flag to indicate the object is not routing data to its associated stream
-    int _suspended;
+    int d_suspended;
+
     // Flag to indicate whether to log verbose messages
-    bool _verbose;
+    bool d_verbose;
+
+    bool d_use_local_time; ///< Use UTC by default
+
 protected:
     BESLog();
 
@@ -102,6 +124,8 @@ protected:
 public:
     ~BESLog();
 
+    const static string mark;
+
     /** @brief Suspend logging of any information until resumed.
      *
      * This method suspends any logging of information. If already suspended
@@ -109,7 +133,7 @@ public:
      */
     void suspend()
     {
-        _suspended = 1;
+        d_suspended = 1;
     }
 
     /** @brief Resumes logging after being suspended.
@@ -119,7 +143,7 @@ public:
      */
     void resume()
     {
-        _suspended = 0;
+        d_suspended = 0;
     }
 
     /** @brief turn on verbose logging
@@ -130,7 +154,7 @@ public:
      */
     void verbose_on()
     {
-        _verbose = true;
+        d_verbose = true;
     }
 
     /** @brief turns off verbose logging
@@ -140,7 +164,7 @@ public:
      */
     void verbose_off()
     {
-        _verbose = false;
+        d_verbose = false;
     }
 
     /** @brief Returns true if verbose logging is requested.
@@ -160,7 +184,7 @@ public:
      */
     bool is_verbose()
     {
-        return _verbose;
+        return d_verbose;
     }
 
     /// Defines a data type p_ios_manipulator "pointer to function that takes ios& and returns ios&".
@@ -183,6 +207,8 @@ public:
 
     virtual void dump(std::ostream &strm) const;
 
+    virtual void flush_me();
+
     static BESLog *TheLog();
 
     // I added this so that it's easy to route the BESDebug messages to the
@@ -190,7 +216,7 @@ public:
     // of those debug messages when it displays the log file. jhrg
     std::ostream *get_log_ostream()
     {
-        return _file_buffer;
+        return d_file_buffer;
     }
 };
 

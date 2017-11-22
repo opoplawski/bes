@@ -1,4 +1,3 @@
-
 # Build the Back End Server.
 #
 # jhrg 9/2/05
@@ -18,22 +17,24 @@ AUTOMAKE_OPTIONS = foreign check-news subdir-objects
 ACLOCAL_AMFLAGS = -I conf
 AM_CXXFLAGS = 
 
+AM_DISTCHECK_CONFIGURE_FLAGS=
+
 if WITH_DEPENDENCIES
-# I think this will enable distcheck to pickup the --with-dependencies
-# flag on OSX but not use it on Linux (where we should be getting all
-# the dependencies from RPMs). jhrg 3/18/15
-#
-# Not always true - some deps come from here, even on linux jhrg 4/5/15
-AM_DISTCHECK_CONFIGURE_FLAGS=--with-dependencies=@ac_bes_dependencies_prefix@
+# With automake 1.14 setting AM_DISTCHECK... means that the user variable
+# DISTCHECK_CONFIGURE_FLAGS no longer needs to be used. Earlier versions
+# of automake don't support this. jhrg 6/5/17
+AM_DISTCHECK_CONFIGURE_FLAGS += --with-dependencies=@ac_bes_dependencies_prefix@ --enable-developer
 endif
 
-SUBDIRS = dispatch xmlcommand ppt server cmdln standalone docs bin templates 
-DIST_SUBDIRS = $(SUBDIRS)
+SUBDIRS = dispatch xmlcommand ppt server cmdln standalone docs bin templates
 
 if LIBDAP
-SUBDIRS += dap dapreader functions
+SUBDIRS += functions dap dapreader
 endif
-if DAP_MODULES
+
+SUBDIRS += hello_world
+
+if DAP_BUILTIN_MODULES
 SUBDIRS += modules
 endif
 
@@ -43,6 +44,10 @@ bin_SCRIPTS = bes-config bes-config-pkgconfig
 # with-out a second underscore.
 init_ddir = $(sysconfdir)/rc.d/init.d
 init_d_SCRIPTS = besd
+
+logrotate_ddir = $(sysconfdir)/logrotate.d
+logrotate_d_DATA = besd.logrotate
+
 CLEANFILES = $(init_d_SCRIPTS)
 
 pkgconfigdir=$(libdir)/pkgconfig
@@ -51,20 +56,25 @@ pkgconfig_DATA = bes_dispatch.pc bes_ppt.pc bes_xml_command.pc
 aclocaldir=$(datadir)/aclocal
 dist_aclocal_DATA = conf/bes.m4
 
-EXTRA_DIST = apache hello_world doxy.conf.in bes.spec \
-OSX_Resources bes-config-pkgconfig
+EXTRA_DIST = doxy.conf.in bes.spec \
+OSX_Resources bes-config-pkgconfig besd.logrotate README.md
 
 server-tests:
 	cd cmdln && make server-tests
 
-.PHONY: docs
-docs: doxy.conf
-	doxygen doxy.conf
-	(cd docs && tar -czf html.tar.gz html)
+HTML_DOCS=html
+DOXYGEN_CONF=doxy.conf
 
-# Not needed. jhrg 1/4/16
-# doxy.conf: doxy.conf.in config.status
-# 	./config.status --file=doxy.conf
+# This target only builds the documents, it does not move them to
+# github. Use the 'gh-docs' target below for that.
+.PHONY: docs
+docs: ${DOXYGEN_CONF}
+	doxygen ${DOXYGEN_CONF}
+
+# GitHub.io docs 
+.PHONY: gh-docs 
+gh-docs:
+	./build-gh-docs.sh
 
 # cccc computes metrics like Lines of code and McCabe. It'a available
 # on the web...
@@ -74,39 +84,6 @@ cccc:
 	for d in dispatch xmlcommand ppt server; \
 		do $(MAKE) -C $$d $(MFLAGS) cccc; \
 	done
-
-###########################################################################
-
-# Fortify targets.
-
-# SUBDIRS = dispatch command xmlcommand ppt cmdln server standalone docs bin templates
-# In the server: server, ppt, dispatch, xmlcommand
-# There is porbably a better way to do this. Focus the analysis on the parts
-# used to build the server, not on the test drivers and documentation.
-
-.PHONY: fortify
-fortify:
-	(cd dispatch && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd xmlcommand && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd ppt && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd server && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd cmdln && $(MAKE) $(MFLAGS))
-	(cd standalone && $(MAKE) $(MFLAGS))
-	(cd docs && $(MAKE) $(MFLAGS))
-	(cd bin && $(MAKE) $(MFLAGS))
-	(cd templates && $(MAKE) $(MFLAGS))
-	(cd dap && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd dapreader && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd functions && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	(cd modules && sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS))
-	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
-
-# Use this to clean the fortify project.
-.PHONY: fortifyclean
-fortifyclean:
-	sourceanalyzer -b @PACKAGE@ -clean
-
-##########################################################################
 
 # This hack strips out the individual handlers' spec files from the
 # big tar and lets us use the old target again, which means I don't

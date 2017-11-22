@@ -55,6 +55,27 @@ using namespace libdap;
 
 namespace functions {
 
+/**
+ * @brief Subset the N arrays using index slicing information
+ *
+ * This function should be called with a series of array variables,
+ * each of which are N-dimensions or greater, where the N common
+ * dimensions should all be the same size. The intent of this function
+ * is that a N-dimensional bounding box, provided in indicial space,
+ * will be used to subset each of the arrays. There are other functions
+ * that can be used to build these bounding boxes using values of
+ * dataset variables - see bbox() and bbox_union(). Taken together,
+ * the roi(), bbox() and bbox_union() functions can be used to subset
+ * a collection of Arrays where some arrays are taken to be dependent
+ * variables and others independent variables. The result is a subset
+ * of the 'discrete coverage' defined by the collection of independent
+ * and dependent variables.
+ *
+ * @param argv Argument vector - variable in the current DDS
+ * @return A DAP Structure named 'roi_subset_unwrap' that holds all of the
+ * subset arrays.
+ */
+
 BaseType *roi_worker(vector<BaseType*> argv)
 {
     int argc = argv.size();
@@ -75,7 +96,7 @@ BaseType *roi_worker(vector<BaseType*> argv)
         break;
     }
 
-    auto_ptr<Structure> response(new Structure("roi_subset"));
+    auto_ptr<Structure> response(new Structure("roi_subset_unwrap"));
 
     Array *bbox = static_cast<Array*>(argv[argc-1]);
 
@@ -131,8 +152,8 @@ BaseType *roi_worker(vector<BaseType*> argv)
     response->set_read_p(true);
 
     return response.release();
-
 }
+
 /**
  * @brief Subset the N arrays using index slicing information
  *
