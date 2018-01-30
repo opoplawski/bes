@@ -1,0 +1,5 @@
+<map id="PPTServer" name="PPTServer">
+<area shape="rect" id="node2" href="$db/df1/classPPTConnection.html" title="{PPTConnection\n||+ closeConnection()\l+ dump()\l+ exit()\l+ getRecvChunkSize()\l+ getSendChunkSize()\l+ initConnection()\l+ receive()\l+ send()\l+ sendExit()\l+ sendExtensions()\l+ ~PPTConnection()\l# PPTConnection()\l# read_extensions()\l# readBuffer()\l# readBufferNonBlocking()\l# send()\l}" alt="" coords="5,491,184,788"/>
+<area shape="rect" id="node3" href="$d0/db7/classConnection.html" title="{Connection\n|# _brokenPipe\l# _mySock\l# _out\l|+ brokenPipe()\l+ closeConnection()\l+ dump()\l+ exit()\l+ getOutputStream()\l+ getRecvChunkSize()\l+ getSendChunkSize()\l+ getSocket()\l+ initConnection()\l+ isConnected()\land 6 more...\l# Connection()\l# send()\l# sendChunk()\l}" alt="" coords="17,145,173,443"/>
+<area shape="rect" id="node4" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="46,5,143,97"/>
+</map>

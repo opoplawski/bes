@@ -1,0 +1,5 @@
+<map id="Socket" name="Socket">
+<area shape="rect" id="node3" href="$dc/d5f/classTcpSocket.html" title="{TcpSocket\n||+ allowConnection()\l+ connect()\l+ dump()\l+ getRecvBufferSize()\l+ getSendBufferSize()\l+ listen()\l+ newSocket()\l+ TcpSocket()\l+ TcpSocket()\l+ TcpSocket()\l+ ~TcpSocket()\l}" alt="" coords="5,491,159,715"/>
+<area shape="rect" id="node4" href="$d2/d4c/classUnixSocket.html" title="{UnixSocket\n||+ allowConnection()\l+ close()\l+ connect()\l+ dump()\l+ getRecvBufferSize()\l+ getSendBufferSize()\l+ listen()\l+ newSocket()\l+ UnixSocket()\l+ UnixSocket()\l+ ~UnixSocket()\l}" alt="" coords="183,491,336,715"/>
+<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="121,5,219,97"/>
+</map>
