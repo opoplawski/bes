@@ -1,8 +1,0 @@
-<map id="BESAbstractModule" name="BESAbstractModule">
-<area shape="rect" id="node3" href="$d7/d42/classBESDapModule.html" title="{BESDapModule\n||+ BESDapModule()\l+ dump()\l+ initialize()\l+ terminate()\l+ ~BESDapModule()\l}" alt="" coords="5,315,150,441"/>
-<area shape="rect" id="node4" href="$d2/df7/classBESXMLDapCommandModule.html" title="{BESXMLDapCommandModule\n||+ BESXMLDapCommandModule()\l+ dump()\l+ initialize()\l+ terminate()\l+ ~BESXMLDapCommandModule()\l}" alt="" coords="174,315,407,441"/>
-<area shape="rect" id="node5" href="$d0/d06/classDapModule.html" title="{DapModule\n||+ DapModule()\l+ dump()\l+ initialize()\l+ terminate()\l+ ~DapModule()\l}" alt="" coords="432,315,550,441"/>
-<area shape="rect" id="node6" href="$de/d2f/classfunctions_1_1DapFunctions.html" title="{functions::DapFunctions\n||+ DapFunctions()\l+ dump()\l+ initialize()\l+ terminate()\l+ ~DapFunctions()\l}" alt="" coords="574,315,738,441"/>
-<area shape="rect" id="node7" href="$d8/dce/classSampleModule.html" title="{SampleModule\n||+ dump()\l+ initialize()\l+ SampleModule()\l+ terminate()\l+ ~SampleModule()\l}" alt="" coords="763,315,901,441"/>
-<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="442,5,539,92"/>
-</map>

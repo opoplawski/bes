@@ -1,4 +1,0 @@
-<map id="UnixSocket" name="UnixSocket">
-<area shape="rect" id="node2" href="$d4/d33/classSocket.html" title="{Socket\n|# _addr_set\l# _connected\l# _ip\l# _listening\l# _port\l# _socket\l|+ allowConnection()\l+ close()\l+ connect()\l+ dump()\l+ getIp()\l+ getPort()\l+ getRecvBufferSize()\l+ getSendBufferSize()\l+ getSocketDescriptor()\l+ isConnected()\land 8 more...\l}" alt="" coords="5,140,167,413"/>
-<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="38,5,135,92"/>
-</map>

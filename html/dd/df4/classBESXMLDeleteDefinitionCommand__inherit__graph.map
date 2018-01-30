@@ -1,4 +1,0 @@
-<map id="BESXMLDeleteDefinitionCommand" name="BESXMLDeleteDefinitionCommand">
-<area shape="rect" id="node2" href="$d4/dfd/classBESXMLCommand.html" title="{BESXMLCommand\n|# _dhi\l# _str_cmd\l|+ dump()\l+ get_dhi()\l+ has_response()\l+ parse_request()\l+ prep_request()\l+ ~BESXMLCommand()\l+ add_command()\l+ del_command()\l+ find_command()\l# BESXMLCommand()\l# set_response()\l}" alt="" coords="52,140,217,360"/>
-<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="86,5,183,92"/>
-</map>

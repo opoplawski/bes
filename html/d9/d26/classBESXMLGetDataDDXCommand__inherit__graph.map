@@ -1,5 +1,0 @@
-<map id="BESXMLGetDataDDXCommand" name="BESXMLGetDataDDXCommand">
-<area shape="rect" id="node2" href="$de/de8/classBESXMLGetCommand.html" title="{BESXMLGetCommand\n||+ BESXMLGetCommand()\l+ dump()\l+ get_dhi()\l+ has_response()\l+ parse_request()\l+ prep_request()\l+ ~BESXMLGetCommand()\l+ CommandBuilder()\l# parse_basic_get()\l}" alt="" coords="33,408,220,588"/>
-<area shape="rect" id="node3" href="$d4/dfd/classBESXMLCommand.html" title="{BESXMLCommand\n|# _dhi\l# _str_cmd\l|+ dump()\l+ get_dhi()\l+ has_response()\l+ parse_request()\l+ prep_request()\l+ ~BESXMLCommand()\l+ add_command()\l+ del_command()\l+ find_command()\l# BESXMLCommand()\l# set_response()\l}" alt="" coords="44,140,209,360"/>
-<area shape="rect" id="node4" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="78,5,175,92"/>
-</map>

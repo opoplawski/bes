@@ -1,6 +1,0 @@
-<map id="BESContainerStorage" name="BESContainerStorage">
-<area shape="rect" id="node3" href="$de/d65/classBESContainerStorageFile.html" title="implementation of BESContainerStorage that represents a way to read container information from a file..." alt="" coords="5,408,208,588"/>
-<area shape="rect" id="node4" href="$d2/d69/classBESContainerStorageVolatile.html" title="implementation of BESContainerStorage that stores containers in memory for the duration of this proce..." alt="" coords="232,395,456,601"/>
-<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="177,5,274,92"/>
-<area shape="rect" id="node5" href="$d5/d6d/classBESContainerStorageCatalog.html" title="implementation of BESContainerStorage that represents a data within a catalog repository ..." alt="" coords="230,649,457,776"/>
-</map>
