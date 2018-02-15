@@ -772,9 +772,23 @@ void AggregationUtil::transferArrayConstraints(Array* pToArray, const Array& fro
             continue;
         }
 
-        NCML_ASSERT_MSG(fromArrIt->name == toArrIt->name, "GAggregationUtil::transferArrayConstraints: "
-            "Expected the dimensions to have the same name but they did not.");
+        // I replaced the assert belowe with an explicit test because renaming the target of an
+        // aggregation (join new only?) will result in the wrong dimensions' constraints being
+        // transferred. With the test, the error manifests itself as a Seg Fault deep in libdap.
+        // jhrg 2/15/18
+        if (fromArrIt->name != toArrIt->name)
+            throw BESSyntaxUserError(string("While transferring constraints to the result of an aggregation, expected the dimensions to have the same name but they did not: from array '")
+                + fromArray.name() + "[" + fromArrIt->name + "]', to array: '"  + pToArray->name()
+                + "[" + toArrIt->name + "]'.", __FILE__, __LINE__);
+
+#if 0
+        NCML_ASSERT_MSG(fromArrIt->name == toArrIt->name,
+            string("GAggregationUtil::transferArrayConstraints: Expected the dimensions to have the same name but they did not: '")
+            + fromArrIt->name + "', '" + toArrIt->name + "'.");
+#endif
+
         pToArray->add_constraint(toArrIt, fromArrIt->start, fromArrIt->stride, fromArrIt->stop);
+
         ++toArrIt;
     }
 
