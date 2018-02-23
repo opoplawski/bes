@@ -305,7 +305,7 @@ void VariableElement::processRenameVariable(NCMLParser& p)
             "Renaming variable failed for element=" + toString() + " since a variable with name=" + _name
                 + " already exists at current parser scope=" + p.getScopeString());
     }
-    BESDEBUG("ncml", "Success, new variable name is open at this scope." << endl);
+    BESDEBUG("ncml", "Success, new variable name " << _name << " is open at this scope." << endl);
 
     // Call set_name on the orgName variable.
     BESDEBUG("ncml", "Renaming variable " << _orgName << " to " << _name << endl);
@@ -313,14 +313,13 @@ void VariableElement::processRenameVariable(NCMLParser& p)
     // If we are doing data, we need to handle some variables (Array)
     // specially since they might refer to underlying data by the new name
     if (p.parsingDataRequest()) {
-        // If not an Array, force it to read or we won't find the new name in the file for HDF at least...
-        if (!dynamic_cast<Array*>(pOrgVar)) {
-            pOrgVar->read();
+        // We won't find the new name in the file for HDF at least...
+        if (dynamic_cast<Array*>(pOrgVar)) {
+            // If the variable is an Array, we need to wrap it in a RenamedArrayWrapper
+            // so that it finds it data correctly.
+            // This will remove the old one and replace our wrapper under the new _name if it's an Array subclass!
+            pOrgVar = replaceArrayIfNeeded(p, pOrgVar, _name);
         }
-        // If the variable is an Array, we need to wrap it in a RenamedArrayWrapper
-        // so that it finds it data correctly.
-        // This will remove the old one and replace our wrapper under the new _name if it's an Array subclass!
-        pOrgVar = replaceArrayIfNeeded(p, pOrgVar, _name);
 
         // This is safe whether we converted it or not.  Rename!
         NCMLUtil::setVariableNameProperly(pOrgVar, _name);
