@@ -1,3 +1,0 @@
-<map id="Array" name="Array">
-<area shape="rect" id="node2" href="$d6/db4/classlibdap_1_1Geo2DArray.html" title="{libdap::Geo2DArray\n|# d_lat\l# d_lon\l# d_missing_value\l# m_gdalGCPs\l# m_geo_transform_coef\l# mb_GeoTransformSet\l# mb_IsVirtualDS\l# mb_LatLonBBox\l# md_GeoMinMax\l# md_Geotransform\land 9 more...\l|+ Geo2DArray()\l+ Geo2DArray()\l+ Geo2DArray()\l+ get_geo_min_max()\l+ GetDAPArray()\l+ GetDAPGrid()\l+ initialize()\l+ initialize_gdal_dataset()\l+ is_valid_lat()\l+ is_valid_lon()\land 10 more...\l}" alt="" coords="5,131,179,501"/>
-</map>

@@ -1,5 +1,0 @@
-<map id="BESInterface" name="BESInterface">
-<area shape="rect" id="node3" href="$d2/d7c/classBESBasicInterface.html" title="Entry point into BES using string command requests. " alt="" coords="5,447,212,685"/>
-<area shape="rect" id="node4" href="$dc/d73/classBESXMLInterface.html" title="Entry point into BES using xml document requests. " alt="" coords="236,476,443,656"/>
-<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="175,5,272,97"/>
-</map>

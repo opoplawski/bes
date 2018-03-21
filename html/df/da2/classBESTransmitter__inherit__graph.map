@@ -1,5 +1,0 @@
-<map id="BESTransmitter" name="BESTransmitter">
-<area shape="rect" id="node3" href="$d4/d08/classBESBasicHttpTransmitter.html" title="{BESBasicHttpTransmitter\n||+ BESBasicHttpTransmitter()\l+ dump()\l+ send_html()\l+ send_text()\l+ ~BESBasicHttpTransmitter()\l}" alt="" coords="5,410,207,546"/>
-<area shape="rect" id="node4" href="$d6/d70/classBESDapTransmit.html" title="{BESDapTransmit\n||+ BESDapTransmit()\l+ ~BESDapTransmit()\l+ send_basic_dap4data()\l+ send_basic_das()\l+ send_basic_data()\l+ send_basic_dds()\l+ send_basic_ddx()\l+ send_basic_dmr()\l}" alt="" coords="231,388,405,568"/>
-<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="163,5,260,97"/>
-</map>

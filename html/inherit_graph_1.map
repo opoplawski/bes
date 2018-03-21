@@ -1,5 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$da/dbc/classAbstractDataset.html" title="Abstract dataset model definition. Based on GDAL dataset model. " alt="" coords="5,31,123,57"/>
-<area shape="rect" id="node2" href="$d7/d62/classlibdap_1_1DAP__Dataset.html" title="DAP_Dataset is a subclass of AbstractDataset, used to process NOAA GOES data. " alt="" coords="171,5,316,32"/>
-<area shape="rect" id="node3" href="$d7/df2/classNC__GOES__Dataset.html" title="NC_GOES_Dataset is a subclass of AbstractDataset, used to process NOAA GOES data. ..." alt="" coords="173,56,313,83"/>
-</map>

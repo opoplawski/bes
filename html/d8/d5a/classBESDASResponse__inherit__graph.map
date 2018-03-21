@@ -1,5 +1,0 @@
-<map id="BESDASResponse" name="BESDASResponse">
-<area shape="rect" id="node2" href="$d3/dbc/classBESDapResponse.html" title="Represents an OPeNDAP DAP response object within the BES. " alt="" coords="5,300,189,553"/>
-<area shape="rect" id="node3" href="$da/d1a/classBESResponseObject.html" title="Abstract base class representing a specific set of information in response to a request to the BES..." alt="" coords="9,145,185,252"/>
-<area shape="rect" id="node4" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="49,5,146,97"/>
-</map>

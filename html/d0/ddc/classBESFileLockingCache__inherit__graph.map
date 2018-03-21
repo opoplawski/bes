@@ -1,7 +1,0 @@
-<map id="BESFileLockingCache" name="BESFileLockingCache">
-<area shape="rect" id="node3" href="$da/d5d/classBESDapFunctionResponseCache.html" title="Cache the results from server functions. " alt="" coords="5,432,256,759"/>
-<area shape="rect" id="node4" href="$de/dc3/classBESDapResponseCache.html" title="{BESDapResponseCache\n|+ PATH_KEY\l+ PREFIX_KEY\l+ SIZE_KEY\l|+ cache_dataset()\l+ ~BESDapResponseCache()\l+ get_instance()\l+ get_instance()\l+ getCacheDirFromConfig()\l+ getCachePrefixFromConfig()\l+ getCacheSizeFromConfig()\l# BESDapResponseCache()\l}" alt="" coords="280,491,483,700"/>
-<area shape="rect" id="node5" href="$d1/d3b/classBESStoredDapResultCache.html" title="{BESStoredDapResultCache\n|+ PREFIX_KEY\l+ SIZE_KEY\l+ SUBDIR_KEY\l|+ get_cached_dap4_data()\l+ store_dap4_result()\l+ ~BESStoredDapResultCache()\l+ get_instance()\l+ get_instance()\l# BESStoredDapResultCache()\l}" alt="" coords="507,505,725,685"/>
-<area shape="rect" id="node6" href="$d8/d0e/classBESUncompressCache.html" title="{BESUncompressCache\n|+ DIR_KEY\l+ PREFIX_KEY\l+ SIZE_KEY\l|+ get_cache_file_name()\l+ ~BESUncompressCache()\l+ get_instance()\l+ get_instance()\l# BESUncompressCache()\l}" alt="" coords="749,513,939,678"/>
-<area shape="rect" id="node2" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="450,5,547,97"/>
-</map>
