@@ -71,6 +71,7 @@ using std::endl;
 
 #include "DapFunctionUtils.h"
 #include "ServerFunctionsList.h"
+#include "ShowPathInfoResponseHandler.h"
 
 
 void BESDapModule::initialize(const string &modname)
@@ -139,6 +140,9 @@ void BESDapModule::initialize(const string &modname)
     WrapItUp *wiu = new WrapItUp();
     libdap::ServerFunctionsList::TheList()->add_function(wiu);
 
+    BESDEBUG("dap", "    adding " << SHOW_PATH_INFO_RESPONSE << " response handler" << endl ) ;
+    BESResponseHandlerList::TheList()->add_handler( SHOW_PATH_INFO_RESPONSE, ShowPathInfoResponseHandler::ShowPathInfoResponseBuilder ) ;
+
 	BESDEBUG("dap", "    adding dap debug context" << endl);
 	BESDebug::Register("dap");
 
@@ -154,12 +158,15 @@ void BESDapModule::terminate(const string &modname)
 	BESResponseHandlerList::TheList()->remove_handler(DDX_RESPONSE);
 	BESResponseHandlerList::TheList()->remove_handler(DATA_RESPONSE);
 	BESResponseHandlerList::TheList()->remove_handler(DATADDX_RESPONSE);
+
 	BESResponseHandlerList::TheList()->remove_handler(CATALOG_RESPONSE);
 
 	BESResponseHandlerList::TheList()->remove_handler(DMR_RESPONSE);
 	BESResponseHandlerList::TheList()->remove_handler(DAP4DATA_RESPONSE);
 
+#if 0
 	BESResponseHandlerList::TheList()->remove_handler(CATALOG_RESPONSE);
+#endif
 
 	BESDEBUG("dap", "    removing " << OPENDAP_SERVICE << " services" << endl);
 	BESServiceRegistry::TheRegistry()->remove_service(OPENDAP_SERVICE);

@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -53,6 +54,9 @@
 #include "BESCatalog.h"
 #include "BESCatalogEntry.h"
 #include "BESCatalogDirectory.h"
+#include "CatalogNode.h"
+#include "CatalogItem.h"
+
 #include "BESError.h"
 #include "TheBESKeys.h"
 #include "BESXMLInfo.h"
@@ -69,201 +73,99 @@ static bool debug = false;
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-using namespace CppUnit;
+static bool debug2 = false;
+#undef DBG2
+#define DBG2(x) do { if (debug) (x); } while(false);
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ostringstream;
+using namespace bes;
+using namespace CppUnit;
+using namespace std;
 
 const string root_dir = "/catalog_test";
 
-#if 0
-string empty_response =
-    "BESCatalogEntry::dump - ()\n\
-    name: /\n\
-    catalog: \n\
-    size: \n\
-    modification date: \n\
-    modification time: \n\
-    services: none\n\
-    metadata: none\n\
-    is collection? no\n\
-    count: 0\n\
-";
-
-string one_response =
-
-    "BESCatalogEntry::dump - ()\n\
-    name: /\n\
-    catalog: default\n\
-    size:\n\
-    modification date:\n\
-    modification time:\n\
-    services: none\n\
-    metadata: none\n\
-    is collection? yes\n\
-    count: 1\n\
-        BESCatalogEntry::dump - ()\n\
-            name: /\n\
-            catalog: default\n\
-            size:\n\
-            modification date:\n\
-            modification time:\n\
-            services: none\n\
-            metadata: none\n\
-            is collection? yes\n\
-            count: 1\n\
-                BESCatalogEntry::dump - ()\n\
-                    name: bes.conf\n\
-                    catalog: default\n\
-                    size:\n\
-                    modification date:\n\
-                    modification time:\n\
-                    services: none\n\
-                    metadata: none\n\
-                    is collection? no\n\
-                    count: 0\n\
-";
-
-
-string cat_root =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showCatalog>\n\
-        <dataset catalog=\"default\" count=\"1\" lastModified=\"\" name=\"/\" node=\"true\" size=\"\">\n\
-            <dataset catalog=\"default\" lastModified=\"\" name=\"bes.conf\" node=\"false\" size=\"\"/>\n\
-        </dataset>\n\
-    </showCatalog>\n\
-</response>\n";
-
-string two_response =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showCatalog>\n\
-        <dataset catalog=\"default\" count=\"2\" lastModified=\"\" name=\"/\" node=\"true\" size=\"\">\n\
-            <dataset catalog=\"other\" count=\"12\" lastModified=\"\" name=\"other/\" node=\"true\" size=\"\"/>\n\
-            <dataset catalog=\"default\" lastModified=\"\" name=\"bes.conf\" node=\"false\" size=\"\"/>\n\
-        </dataset>\n\
-    </showCatalog>\n\
-</response>\n";
-
-string other_root =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showCatalog>\n\
-        <dataset catalog=\"other\" count=\"12\" lastModified=\"\" name=\"other/\" node=\"true\" size=\"\">\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/bad_keys1.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/defT.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/empty.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/info_test.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test_include.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test_m1.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test_m2.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test_m3.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/persistence_cgi_test.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/persistence_file_test.ini\" node=\"false\" size=\"\"/>\n\
-            <dataset catalog=\"other\" lastModified=\"\" name=\"other/persistence_mysql_test.ini\" node=\"false\" size=\"\"/>\n\
-        </dataset>\n\
-    </showCatalog>\n\
-</response>\n";
-
-string other_root_info =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showInfo>\n\
-        <dataset catalog=\"other\" count=\"12\" lastModified=\"\" name=\"other/\" node=\"true\" size=\"\"/>\n\
-    </showInfo>\n\
-</response>\n";
-
-string spec_node =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showCatalog>\n\
-        <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test_m3.ini\" node=\"false\" size=\"\"/>\n\
-    </showCatalog>\n\
-</response>\n";
-
-string spec_info =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showInfo>\n\
-        <dataset catalog=\"other\" lastModified=\"\" name=\"other/keys_test_m3.ini\" node=\"false\" size=\"\"/>\n\
-    </showInfo>\n\
-</response>\n";
-
-string default_node =
-    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\
-<response xmlns=\"http://xml.opendap.org/ns/bes/1.0#\">\n\
-    <showCatalog>\n\
-        <dataset catalog=\"default\" lastModified=\"\" name=\"bes.conf\" node=\"false\" size=\"\"/>\n\
-    </showCatalog>\n\
-</response>\n";
-#endif
-
 class catT: public TestFixture {
 private:
-    string remove(string &str, string attr, string::size_type s)
+    /**
+     * Like remove_attr, remove the value of an attribute. This function
+     * looks for quoted values and removes those (while remove_attr()
+     * expects values to be separated by a colon).
+     *
+     * @param str Operate on this string
+     * @param attr Look for this attribute
+     * @param pos Start working at this position
+     * @return The modified string
+     */
+    string remove(string &str, const string &attr, string::size_type pos)
     {
-        string::size_type apos = str.find(attr, s);
+        string::size_type apos = str.find(attr, pos);
         if (apos == string::npos) return str;
+
         apos = str.find("\"", apos + 1);
         if (apos == string::npos) return str;
+
         string::size_type qpos = str.find("\"", apos + 1);
         if (qpos == string::npos) return str;
-        str = str.substr(0, apos + 1) + str.substr(qpos);
-        return remove(str, attr, qpos + 1);
-    }
 
-    string remove_ptr(string &str, string::size_type pos = 0)
-    {
-        string ret;
-        string::size_type lparen = str.find("(", pos);
-        if (lparen != string::npos) {
-            string::size_type rparen = str.find(")", lparen);
-            if (rparen != string::npos) {
-                ret = str.substr(0, lparen + 1) + str.substr(rparen);
-                ret = remove_ptr(ret, rparen + 1);
-            }
-            else {
-                ret = str;
-            }
-        }
-        else {
-            ret = str;
-        }
-        return ret;
-    }
-
-    string remove_attr(string &str, string &attr, string::size_type pos = 0)
-    {
-        string ret;
-        string::size_type apos = str.find(attr, pos);
-        if (apos != string::npos) {
-            string::size_type colon = str.find(":", apos);
-            if (colon != string::npos) {
-                string::size_type end = str.find("\n", colon);
-                if (end != string::npos) {
-                    ret = str.substr(0, colon + 1) + str.substr(end);
-                    ret = remove_attr(ret, attr, end);
-                }
-                else {
-                    ret = str;
-                }
-            }
-            else {
-                ret = str;
-            }
-        }
-        else {
-            ret = str;
-        }
-        return ret;
+        // str = str.substr(0, apos + 1) + str.substr(qpos);
+        // instead of using substr(), use erase
+        str.erase(apos + 1, qpos - apos -1);
+        // for the recursive call, start looking past the chars just removed.
+        // There's no sense checking from the start of the string.
+        return remove(str, attr, apos + 1);
     }
 
     /**
-     * Remove the size, mod date and mod time 'attributes' from a string
+     * Return the \arg str with all the pointer items removed.
+     * Used to remove the pointer information printed by the dump()
+     * methods (which are usually different and thus break the
+     * baselines).
+     *
+     * @param str Hack this string
+     * @param pos Look starting at this position
+     * @return The modified string.
+     */
+    string remove_ptr(string &str, string::size_type pos = 0)
+    {
+        string::size_type start = str.find("0x", pos);
+        if (start == string::npos) return str;
+
+        string::size_type end = str.find_first_not_of("0123456789abcdef", start + 2);
+        if (end == string::npos) return str;
+
+        // Cut out the '0x0000...0000' stuff
+        str.erase(start, end - start);
+        return remove_ptr(str, start);
+    }
+
+
+    /**
+     * Return the \arg str with all attributes' \arg attr values removed. An
+     * attribute is a _string_ : _value_. These are often things like dates
+     * and sizes that can vary between OSs, machines, et cetera.
+     *
+     * @param str Hack this string
+     * @param attr Look for this attribute
+     * @param pos start looking at this position.
+     * @return The modified string
+     */
+    string remove_attr(string &str, const string &attr, string::size_type pos = 0)
+    {
+        string::size_type apos = str.find(attr, pos);
+        if (apos == string::npos) return str;
+
+        string::size_type colon = str.find(":", apos);
+        if (colon == string::npos) return str;
+
+        string::size_type end = str.find("\n", colon);
+        if (end == string::npos) return str;
+
+        str.erase(colon + 1, end - colon - 1);
+        return remove_attr(str, attr, colon + 1);
+    }
+
+    /**
+     * Remove the _size_, _modification date_ and _time_ 'attributes' from a string
+     *
      * @param str
      * @return The pruned string
      */
@@ -305,6 +207,8 @@ public:
 
     void tearDown()
     {
+        delete TheBESKeys::_instance;
+        TheBESKeys::_instance = 0;
     }
 
     CPPUNIT_TEST_SUITE( catT );
@@ -313,32 +217,42 @@ public:
     CPPUNIT_TEST(no_default_test);
     CPPUNIT_TEST(root_dir_test1);
 
-    CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST(get_node_test);
+    CPPUNIT_TEST(get_node_test_2);
 
+    CPPUNIT_TEST(get_site_map_test);
+#if 0
+    // This is a good test, but it's hard to get it to work with distcheck. jhrg 3/7/18
+    CPPUNIT_TEST(get_site_map_test_2);
+#endif
+    CPPUNIT_TEST(get_site_map_test_3);
+    CPPUNIT_TEST(get_site_map_test_4);
+
+
+    CPPUNIT_TEST_SUITE_END();
 
     void default_test()
     {
-        DBG(cerr << "set the default catalog and test" << endl);
+        DBG(cerr << __func__ << endl);
 
         TheBESKeys::TheKeys()->set_key("BES.Catalog.Default=default");
-        string defcat = BESCatalogList::TheCatalogList()->default_catalog();
+        string defcat = BESCatalogList::TheCatalogList()->default_catalog_name();
         CPPUNIT_ASSERT(defcat == "default");
-
-        DBG(cerr << "num catalogs should be zero" << endl);
 
         int numcats = BESCatalogList::TheCatalogList()->num_catalogs();
         CPPUNIT_ASSERT(numcats == 0);
 
-        DBG(cerr << "show empty catalog list" << endl);
         try {
-            BESDataHandlerInterface dhi;
+            // show_catalogs(...) the false value for show_default will suppress
+            // showing anything for the default catalog. Since there's no other
+            // catalog, there's nothing to show. jhrg 2.25.18
             BESCatalogEntry *entry = 0;
-            entry = BESCatalogList::TheCatalogList()->show_catalogs(dhi, 0);
+            entry = BESCatalogList::TheCatalogList()->show_catalogs(0, false);
             ostringstream strm;
             entry->dump(strm);
             string str = strm.str();
             str = remove_ptr(str);
-            string empty_response = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/empty_response.txt");
+            string empty_response = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/empty_response.txt");
 
             DBG(cerr << "baseline: " << empty_response << endl);
             DBG(cerr << "response: " << str << endl);
@@ -351,8 +265,9 @@ public:
         }
     }
 
+    // This is really three different tests. jhrg 2.25.18
     void no_default_test() {
-        DBG(cerr << "no default catalog, use catalog response" << endl);
+        DBG(cerr << __func__ << endl);
         try {
             BESDataHandlerInterface dhi;
             dhi.data[CATALOG_OR_INFO] = CATALOG_RESPONSE;
@@ -386,9 +301,8 @@ public:
 
     // This test should be broken up into smaller pieces. jhrg 8/23/17
     void root_dir_test1() {
-        string var = (string) "BES.Catalog.default.RootDirectory=" + TEST_SRC_DIR + root_dir;
-        TheBESKeys::TheKeys()->set_key(var);
-        try {
+       TheBESKeys::TheKeys()->set_key(string("BES.Catalog.default.RootDirectory=") + TEST_SRC_DIR + root_dir);
+       try {
             BESCatalogList::TheCatalogList()->add_catalog(new BESCatalogDirectory("catalog"));
             CPPUNIT_FAIL("Succeeded in adding catalog, should not have");
         }
@@ -397,16 +311,13 @@ public:
             CPPUNIT_ASSERT("Correctly caught exception");
         }
 
-        DBG(cerr << "add good catalog" << endl);
-        var = (string) "BES.Catalog.default.TypeMatch=conf:conf&;";
-        TheBESKeys::TheKeys()->set_key(var);
-        var = (string) "BES.Catalog.default.Include=.*file.*$;";
-        TheBESKeys::TheKeys()->set_key(var);
-        var = (string) "BES.Catalog.default.Exclude=README;";
-        TheBESKeys::TheKeys()->set_key(var);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.default.TypeMatch=conf:.*\\.conf$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.default.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.default.Exclude=README;");
 
         try {
-            BESCatalogList::TheCatalogList()->add_catalog(new BESCatalogDirectory("default"));
+            if (!BESCatalogList::TheCatalogList()->ref_catalog("default"))
+                BESCatalogList::TheCatalogList()->add_catalog(new BESCatalogDirectory("default"));
         }
         catch (BESError &e) {
             DBG(cerr << e.get_message() << endl);
@@ -420,14 +331,14 @@ public:
 
         try {
             BESDataHandlerInterface dhi;
-            BESCatalogEntry *entry = BESCatalogList::TheCatalogList()->show_catalogs(dhi, 0);
+            BESCatalogEntry *entry = BESCatalogList::TheCatalogList()->show_catalogs(0);
             ostringstream strm;
             entry->dump(strm);
             string str = strm.str();
             str = remove_ptr(str);
             str = remove_stuff(str);
 
-            string one_response = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/one_response.txt");
+            string one_response = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/one_response.txt");
 
             DBG(cerr << "baseline: " << one_response << endl);
             DBG(cerr << "response: " << str << endl);
@@ -455,7 +366,7 @@ public:
             string str = remove(strm_s, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string cat_root = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/cat_root.txt");
+            string cat_root = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/cat_root.txt");
 
             DBG(cerr << "baseline: " << cat_root << endl);
             DBG(cerr << "response: " << str << endl);
@@ -468,14 +379,12 @@ public:
         }
 
         DBG(cerr << "add good catalog" << endl);
-        var = (string) "BES.Catalog.other.RootDirectory=" + TEST_SRC_DIR + root_dir;
-        TheBESKeys::TheKeys()->set_key(var);
-        var = (string) "BES.Catalog.other.TypeMatch=info:info&;";
-        TheBESKeys::TheKeys()->set_key(var);
-        var = (string) "BES.Catalog.other.Include=.*file.*$;";
-        TheBESKeys::TheKeys()->set_key(var);
-        var = (string) "BES.Catalog.other.Exclude=\\..*;README;";
-        TheBESKeys::TheKeys()->set_key(var);
+
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.other.RootDirectory=") + TEST_SRC_DIR + root_dir);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.other.TypeMatch=conf:conf&;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.other.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.other.Exclude=README;");
+
         BESCatalog *other = 0;
         try {
             other = new BESCatalogDirectory("other");
@@ -507,7 +416,7 @@ public:
             string str = remove(strm_s, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string two_response = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/two_response.txt");
+            string two_response = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/two_response.txt");
             DBG(cerr << "baseline: " << two_response << endl);
             DBG(cerr << "response: " << str << endl);
 
@@ -534,7 +443,7 @@ public:
             string str = remove(strm_s, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string other_root = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/other_root.txt");
+            string other_root = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/other_root.txt");
             DBG(cerr << "baseline: " << other_root << endl);
             DBG(cerr << "response: " << str << endl);
 
@@ -561,7 +470,7 @@ public:
             string str = remove(strm_s, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string other_root_info = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/other_root_info.txt");
+            string other_root_info = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/other_root_info.txt");
             DBG(cerr << "baseline: " << other_root_info << endl);
             DBG(cerr << "response: " << str << endl);
 
@@ -589,7 +498,7 @@ public:
             str = remove(str, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string spec_node = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/spec_node.txt");
+            string spec_node = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/spec_node.txt");
             DBG(cerr << "baseline: " << spec_node << endl);
             DBG(cerr << "response: " << str << endl);
 
@@ -617,7 +526,7 @@ public:
             str = remove(str, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string spec_info = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/spec_info.txt");
+            string spec_info = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/spec_info.txt");
             DBG(cerr << "baseline: " << spec_info << endl);
             DBG(cerr << "response: " << str << endl);
 
@@ -644,7 +553,7 @@ public:
             string str = remove(strm_s, "lastModified", 0);
             str = remove(str, "size", 0);
 
-            string default_node = readTestBaseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/default_node.txt");
+            string default_node = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/default_node.txt");
             DBG(cerr << "baseline: " << default_node << endl);
             DBG(cerr << "response: " << str << endl);
 
@@ -686,6 +595,237 @@ public:
         DBG(cerr << "*****************************************" << endl);
         DBG(cerr << "Returning from catT::run" << endl);
     }
+
+    void get_node_test()
+    {
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.nt1.RootDirectory=") + TEST_SRC_DIR + root_dir);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.nt1.TypeMatch=conf:.*\\.conf$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.nt1.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.nt1.Exclude=README;");
+
+        auto_ptr<BESCatalog> catalog(0);
+        try {
+            catalog.reset(new BESCatalogDirectory("nt1"));
+            CPPUNIT_ASSERT(catalog.get());
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to add catalog");
+        }
+
+        try {
+            auto_ptr<CatalogNode> node(catalog->get_node("/"));
+
+            ostringstream oss;
+            node->dump(oss);
+
+            if (node->get_item_count() > 0) {
+                int n = 0;
+#if 0
+                for (CatalogNode::item_citer i = node->items_begin(), e = node->items_end(); i != e; ++i) {
+                    oss << "Item " << n++ << ": " << endl;
+                    (*i)->dump(oss);
+                }
+#endif
+                for (CatalogNode::item_citer i = node->nodes_begin(), e = node->nodes_end(); i != e; ++i) {
+                    oss << "Node " << n++ << ": " << endl;
+                    (*i)->dump(oss);
+                }
+
+                for (CatalogNode::item_citer i = node->leaves_begin(), e = node->leaves_end(); i != e; ++i) {
+                    oss << "Leaf " << n++ << ": " << endl;
+                    (*i)->dump(oss);
+                }
+            }
+
+            string str = oss.str();
+
+            str = remove_ptr(str);
+            str = remove_attr(str, "last modified time");
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/get_node_1.txt");
+
+            DBG2(cerr << "Baseline: " << baseline << endl);
+            DBG(cerr << "response: " << str << endl);
+
+            CPPUNIT_ASSERT(str == baseline);
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to get node listing for '/'");
+        }
+    }
+
+    void get_node_test_2()
+    {
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.nt2.RootDirectory=") + TEST_SRC_DIR + root_dir);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.nt2.TypeMatch=conf:.*\\.conf$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.nt2.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.nt2.Exclude=README;");
+
+        auto_ptr<BESCatalog> catalog(new BESCatalogDirectory("nt2"));
+        CPPUNIT_ASSERT(catalog.get());
+
+        try {
+            auto_ptr<CatalogNode> node(catalog->get_node("/child_dir"));
+
+            ostringstream oss;
+            node->dump(oss);
+
+            if (node->get_item_count() > 0) {
+                 int n = 0;
+ #if 0
+                 for (CatalogNode::item_citer i = node->items_begin(), e = node->items_end(); i != e; ++i) {
+                     oss << "Item " << n++ << ": " << endl;
+                     (*i)->dump(oss);
+                 }
+ #endif
+                 for (CatalogNode::item_citer i = node->nodes_begin(), e = node->nodes_end(); i != e; ++i) {
+                     oss << "Node " << n++ << ": " << endl;
+                     (*i)->dump(oss);
+                 }
+
+                 for (CatalogNode::item_citer i = node->leaves_begin(), e = node->leaves_end(); i != e; ++i) {
+                     oss << "Leaf " << n++ << ": " << endl;
+                     (*i)->dump(oss);
+                 }
+             }
+
+            string str = oss.str();
+
+            str = remove_ptr(str);
+            str = remove_attr(str, "last modified time");
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/get_node_2.txt");
+
+            DBG2(cerr << "Baseline: " << baseline << endl);
+            DBG(cerr << "response: " << str << endl);
+
+            CPPUNIT_ASSERT(str == baseline);
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to get node listing for '/child_dir'");
+        }
+    }
+
+    void get_site_map_test()
+    {
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.sm1.RootDirectory=") + TEST_SRC_DIR + root_dir);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm1.TypeMatch=conf:.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm1.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm1.Exclude=README;");
+
+        auto_ptr<BESCatalog> catalog(new BESCatalogDirectory("sm1"));
+        CPPUNIT_ASSERT(catalog.get());
+
+        try {
+            ostringstream oss;
+
+            catalog->get_site_map("https://machine/opendap", "", ".html", oss, "/");
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/get_site_map.txt");
+
+            DBG2(cerr << "Baseline: " << baseline << endl);
+            DBG(cerr << "response: " << oss.str() << endl);
+
+            CPPUNIT_ASSERT(oss.str() == baseline);
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to get site map");
+        }
+    }
+
+    // This test is good, especially for timing, etc., but the differences between
+    // source in a typical git clone and what gets into the tar ball and thus, shows
+    // up in a distcheck build, are too great to expect it to pass when we run those
+    // builds. jhrg 3/7/18
+    void get_site_map_test_2()
+    {
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.sm2.RootDirectory=") + TOP_SRC_DIR);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm2.TypeMatch=src:.*\\.cc$;src:.*\\.h$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm2.Include=.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm2.Exclude=README;not_used$;_build;bes-[0-9.]*;.*\\.o;.*\\.Po;.*\\.html;");
+
+        auto_ptr<BESCatalog> catalog(new BESCatalogDirectory("sm2"));
+        CPPUNIT_ASSERT(catalog.get());
+
+        try {
+            ostringstream oss;
+
+            catalog->get_site_map("https://machine/opendap", "", ".html", oss, "/");
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/get_site_map_2.txt");
+            string str = oss.str();
+
+            DBG2(cerr << "Baseline: " << baseline << endl);
+            DBG(cerr << "response: " << str << endl);
+
+            CPPUNIT_ASSERT(str == baseline);
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to get site map");
+        }
+    }
+
+
+    void get_site_map_test_3()
+    {
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.sm3.RootDirectory=") + TEST_SRC_DIR + root_dir);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm3.TypeMatch=conf:.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm3.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm3.Exclude=README;");
+
+        auto_ptr<BESCatalog> catalog(new BESCatalogDirectory("sm3"));
+        CPPUNIT_ASSERT(catalog.get());
+
+        try {
+            ostringstream oss;
+
+            catalog->get_site_map("https://machine/opendap", "contents.html", "", oss, "/");
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/get_site_map_3.txt");
+
+            DBG2(cerr << "Baseline: " << baseline << endl);
+            DBG(cerr << "response: " << oss.str() << endl);
+
+            CPPUNIT_ASSERT(oss.str() == baseline);
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to get site map");
+        }
+    }
+
+    void get_site_map_test_4()
+    {
+        TheBESKeys::TheKeys()->set_key(string("BES.Catalog.sm4.RootDirectory=") + TEST_SRC_DIR + root_dir);
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm4.TypeMatch=conf:.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm4.Include=.*file.*$;");
+        TheBESKeys::TheKeys()->set_key("BES.Catalog.sm4.Exclude=README;");
+
+        auto_ptr<BESCatalog> catalog(new BESCatalogDirectory("sm4"));
+        CPPUNIT_ASSERT(catalog.get());
+
+        try {
+            ostringstream oss;
+
+            catalog->get_site_map("https://machine/opendap", "contents.html", ".html", oss, "/");
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/catalog_test_baselines/get_site_map_4.txt");
+
+            DBG2(cerr << "Baseline: " << baseline << endl);
+            DBG(cerr << "response: " << oss.str() << endl);
+
+            CPPUNIT_ASSERT(oss.str() == baseline);
+        }
+        catch (BESError &e) {
+            DBG(cerr << e.get_message() << endl);
+            CPPUNIT_FAIL("Failed to get site map");
+        }
+    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(catT);
@@ -693,12 +833,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(catT);
 int main(int argc, char*argv[])
 {
 
-    GetOpt getopt(argc, argv, "dh");
+    GetOpt getopt(argc, argv, "dDh");
     char option_char;
     while ((option_char = getopt()) != EOF)
         switch (option_char) {
         case 'd':
-            debug = 1;  // debug is a static global
+            debug = true;  // debug is a static global
+            break;
+        case 'D':
+            debug2 = true;
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: catT has the following tests:" << endl;

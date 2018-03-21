@@ -1,12 +1,9 @@
-// GatewayRequest.h
 
-// -*- mode: c++; c-basic-offset:4 -*-
+// This file is part of bes, A C++ back-end server implementation framework
+// for the OPeNDAP Data Access Protocol.
 
-// This file is part of gateway_module, A C++ module that can be loaded in to
-// the OPeNDAP Back-End Server (BES) and is able to handle remote requests.
-
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
-// Author: Patrick West <pwest@ucar.edu>
+// Copyright (c) 2018 OPeNDAP, Inc
+// Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,35 +21,33 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPYRIGHT URI/MIT 1994-1999
-// Please read the full copyright statement in the file COPYRIGHT_URI.
-//
-// Authors:
-//      pcw       Patrick West <pwest@ucar.edu>
 
-#ifndef I_GatewayRequest_H
-#define I_GatewayRequest_H 1
+#ifndef A_ShowPathInfoCommand_h
+#define A_ShowPathInfoCommand_h 1
 
-#include <string>
+#include "BESXMLCommand.h"
+#include "BESDataHandlerInterface.h"
 
-using std::string;
+#define SHOW_PATH_INFO_RESPONSE_STR "showPathInfo"
 
-#include <HTTPResponse.h>
 
-using namespace libdap;
-
-/** @brief knows how to make a remote request */
-class GatewayRequest {
+class ShowPathInfoCommand: public BESXMLCommand {
 public:
-    GatewayRequest()
+    ShowPathInfoCommand(const BESDataHandlerInterface &base_dhi);
+    virtual ~ShowPathInfoCommand()
     {
     }
-    ;
-    ~GatewayRequest()
+
+    virtual void parse_request(xmlNode *node);
+
+    virtual bool has_response()
     {
+        return true;
     }
-    ;
-    HTTPResponse * make_request(const string &url, string &type);
+
+    virtual void dump(ostream &strm) const;
+
+    static BESXMLCommand * CommandBuilder(const BESDataHandlerInterface &base_dhi);
 };
 
-#endif // I_GatewayRequest_H
+#endif // A_ShowPathInfoCommand_h

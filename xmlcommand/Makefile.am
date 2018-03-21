@@ -10,7 +10,7 @@ if BES_DEVELOPER
 AM_CPPFLAGS += -DBES_DEVELOPER
 endif
 
-SUBDIRS = . unit-tests
+SUBDIRS = . unit-tests tests
 
 lib_LTLIBRARIES = libbes_xml_command.la
 if LIBDAP
@@ -45,8 +45,8 @@ SRCS = BESXMLInterface.cc BESXMLCommand.cc BESXMLUtils.cc		\
 	BESXMLDefineCommand.cc BESXMLGetCommand.cc			\
 	BESXMLDeleteContainerCommand.cc BESXMLDeleteContainersCommand.cc\
 	BESXMLDeleteDefinitionCommand.cc BESXMLDeleteDefinitionsCommand.cc \
-	SetContextsResponseHandler.cc XMLSetContextsCommand.cc
-
+	ShowPathInfoCommand.cc SetContextsResponseHandler.cc XMLSetContextsCommand.cc
+	
 HDRS = BESXMLInterface.h BESXMLCommand.h BESXMLUtils.h			\
 	BESXMLDefaultCommands.h BESXMLShowCommand.h			\
 	BESXMLShowErrorCommand.h					\
@@ -55,10 +55,11 @@ HDRS = BESXMLInterface.h BESXMLCommand.h BESXMLUtils.h			\
 	BESXMLDeleteContainerCommand.h BESXMLDeleteContainersCommand.h	\
 	BESXMLDeleteDefinitionCommand.h BESXMLDeleteDefinitionsCommand.h \
 	SetContextsResponseHandler.h XMLSetContextsCommand.h NullResponseHandler.h \
-	SetContextsNames.h
-	
-DAP_SRCS = BESXMLDapCommandModule.cc BESXMLCatalogCommand.cc
-DAP_HDRS = BESXMLDapCommandModule.h BESXMLCatalogCommand.h
+	SetContextsNames.h ShowPathInfoCommand.h
+
+DAP_SRCS = BESXMLDapCommandModule.cc BESXMLCatalogCommand.cc SiteMapCommand.cc
+
+DAP_HDRS = BESXMLDapCommandModule.h BESXMLCatalogCommand.h SiteMapCommand.h SiteMapCommandNames.h
 
 C4_DIR=./cccc
 .PHONY: cccc

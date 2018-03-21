@@ -96,6 +96,7 @@ BESContainerStorageCatalog::~BESContainerStorageCatalog()
  * @param real_name real name (path to the file relative to the root
  * catalog's root directory)
  * @param type type of data represented by this container
+ *
  * @throws BESForbiddenError if the resources requested is not accessible
  * @throws BESNotFoundError if the resources requested is not found
  * @throws BESInternalError if there is a problem determining the resource
@@ -103,7 +104,7 @@ BESContainerStorageCatalog::~BESContainerStorageCatalog()
  */
 void BESContainerStorageCatalog::add_container(const string &sym_name, const string &real_name, const string &type)
 {
-    // make sure that the real name passed in is not oon the exclude list
+    // make sure that the real name passed in is not on the exclude list
     // for the catalog. First, remove any trailing slashes. Then find the
     // basename of the remaining real name. The make sure it's not on the
     // exclude list.
@@ -140,10 +141,10 @@ void BESContainerStorageCatalog::add_container(const string &sym_name, const str
         BESCatalogUtils::match_citer ie = _utils->match_list_end();
         bool done = false;
         for (; i != ie && !done; i++) {
-            BESCatalogUtils::type_reg match = (*i);
-            BESRegex reg_expr(match.reg.c_str());
+            BESCatalogUtils::handler_regex match = (*i);
+            BESRegex reg_expr(match.regex.c_str());
             if (reg_expr.match(real_name.c_str(), real_name.length()) == static_cast<int>(real_name.length())) {
-                new_type = match.type;
+                new_type = match.handler;
                 done = true;
             }
 
@@ -159,8 +160,8 @@ void BESContainerStorageCatalog::add_container(const string &sym_name, const str
  * data) and what the request handler serves for the node
  *
  * @param inQuestion node to look up
- * @param provides what is provided for the node by the node types request handler
- * return true if a request hanlder serves the specified node, false otherwise
+ * @param provides what is provided for the node by the node type's request handler
+ * @return true if a request handler serves the specified node, false otherwise
  */
 bool BESContainerStorageCatalog::isData(const string &inQuestion, list<string> &provides)
 {
@@ -169,10 +170,10 @@ bool BESContainerStorageCatalog::isData(const string &inQuestion, list<string> &
     BESCatalogUtils::match_citer ie = _utils->match_list_end();
     bool done = false;
     for (; i != ie && !done; i++) {
-        BESCatalogUtils::type_reg match = (*i);
-        BESRegex reg_expr(match.reg.c_str());
+        BESCatalogUtils::handler_regex match = (*i);
+        BESRegex reg_expr(match.regex.c_str());
         if (reg_expr.match(inQuestion.c_str(), inQuestion.length()) == static_cast<int>(inQuestion.length())) {
-            node_type = match.type;
+            node_type = match.handler;
             done = true;
         }
     }

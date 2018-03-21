@@ -218,7 +218,8 @@ string BESUtil::unescape(const string &s)
     return new_str;
 }
 
-/** Check if the specified path is valid
+/**
+ * @brief Check if the specified path is valid
  *
  * Checks to see if the specified path is a valid path or not. The root
  * directory specified is assumed to be valid, so we don't check that
@@ -273,7 +274,7 @@ void BESUtil::check_path(const string &path, const string &root, bool follow_sym
 
     // what is remaining to check
     string rem = path;
-    if (rem[0] == '/') rem = rem.substr(1, rem.length() - 1);
+    if (rem[0] == '/') rem = rem.substr(1); // substr(1, rem.length() - 1); jhrg 3/5/18
     if (rem[rem.length() - 1] == '/') rem = rem.substr(0, rem.length() - 1);
 
     // full path of the thing to check
@@ -283,19 +284,24 @@ void BESUtil::check_path(const string &path, const string &root, bool follow_sym
     }
 
     // path checked so far
-    string checked;
+    //string checked;
     while (!done) {
         size_t slash = rem.find('/');
         if (slash == string::npos) {
-            fullpath = fullpath + "/" + rem;
-            checked = checked + "/" + rem;
+            // fullpath = fullpath + "/" + rem; jhrg 3/5/18
+            fullpath.append("/").append(rem);
+            // checked = checked + "/" + rem;
             done = true;
         }
         else {
-            fullpath = fullpath + "/" + rem.substr(0, slash);
-            checked = checked + "/" + rem.substr(0, slash);
+            // fullpath = fullpath + "/" + rem.substr(0, slash);
+            fullpath.append("/").append(rem.substr(0, slash));
+            // checked = checked + "/" + rem.substr(0, slash);
+            //checked.append("/").append(rem.substr(0, slash));
             rem = rem.substr(slash + 1, rem.length() - slash);
         }
+
+        //checked = fullpath;
 
         struct stat buf;
         int statret = ye_old_stat_function(fullpath.c_str(), &buf);
@@ -304,13 +310,12 @@ void BESUtil::check_path(const string &path, const string &root, bool follow_sym
             // stat failed, so not accessible. Get the error string,
             // store in error, and throw exception
             char *s_err = strerror(errsv);
-            string error = "Unable to access node " + checked + ": ";
-            if (s_err) {
-                error = error + s_err;
-            }
-            else {
-                error = error + "unknown access error";
-            }
+            //string error = "Unable to access node " + checked + ": ";
+            string error = "Unable to access node " + fullpath + ": ";
+            if (s_err)
+                error.append(s_err);
+            else
+                error.append("unknown error");
 
             BESDEBUG(debug_key, "check_path() - error: "<< error << "   errno: " << errno << endl);
 
@@ -326,13 +331,13 @@ void BESUtil::check_path(const string &path, const string &root, bool follow_sym
             }
         }
         else {
-            //The call to (stat | lstat) was successful, now check to see if it's a symlink.
+            // The call to (stat | lstat) was successful, now check to see if it's a symlink.
             // Note that if follow_symlinks is true then this will never evaluate as true
             // because we'll be using 'stat' and not 'lstat' and stat will follow the link
             // and return information about the file/dir pointed to by the symlink
             if (S_ISLNK(buf.st_mode)) {
-                string error = "You do not have permission to access " + checked;
-                throw BESForbiddenError(error, __FILE__, __LINE__);
+                //string error = "You do not have permission to access " + checked;
+                throw BESForbiddenError(string("You do not have permission to access ") + fullpath, __FILE__, __LINE__);
             }
         }
     }
@@ -779,17 +784,13 @@ string BESUtil::assemblePath(const string &firstPart, const string &secondPart, 
 #endif
 
 #if 1
-    BESDEBUG("util", "BESUtil::assemblePath() -  firstPart: "<< firstPart << endl);
-    BESDEBUG("util", "BESUtil::assemblePath() -  secondPart: "<< secondPart << endl);
+    BESDEBUG("util", "BESUtil::assemblePath() -  firstPart:  '" << firstPart  << "'" << endl);
+    BESDEBUG("util", "BESUtil::assemblePath() -  secondPart: '" << secondPart << "'" << endl);
 
-    assert(!firstPart.empty());
+    // assert(!firstPart.empty()); // I dropped this because I had to ask, why? Why does it matter? ndp 2017
 
     string first = firstPart;
     string second = secondPart;
-
-    if (ensureLeadingSlash) {
-        if (first[0] != '/') first = "/" + first;
-    }
 
     // make sure there are not multiple slashes at the end of the first part...
     // Note that this removes all of the slashes. jhrg 9/27/16
@@ -804,7 +805,27 @@ string BESUtil::assemblePath(const string &firstPart, const string &secondPart, 
         second.erase(0, 1);
     }
 
-    string newPath = first.append("/").append(second);
+    string newPath;
+
+    if(first.empty()){
+        newPath = second;
+    }
+    else if(second.empty()){
+        newPath = first;
+    }
+    else {
+        newPath = first.append("/").append(second);
+    }
+
+    if (ensureLeadingSlash) {
+        if(newPath.empty()){
+            newPath = "/";
+        }
+        else if(newPath.compare(0,1,"/")){
+            newPath = "/" + newPath;
+        }
+    }
+
 
     BESDEBUG("util", "BESUtil::assemblePath() -  newPath: "<< newPath << endl);
 
