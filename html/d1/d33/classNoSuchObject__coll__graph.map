@@ -1,0 +1,7 @@
+<map id="NoSuchObject" name="NoSuchObject">
+<area shape="rect" id="node2" href="$d5/d0f/classBESInternalFatalError.html" title="exception thrown if an internal error is found and is fatal to the BES " alt="" coords="56,575,236,696"/>
+<area shape="rect" id="node3" href="$d7/dbd/classBESError.html" title="Abstract exception class for the BES with basic string message. " alt="" coords="81,316,211,525"/>
+<area shape="rect" id="node4" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="5,147,103,239"/>
+<area shape="rect" id="node6" title="STL class. " alt="" coords="190,154,270,231"/>
+<area shape="rect" id="node7" title="STL class. " alt="" coords="167,5,293,97"/>
+</map>

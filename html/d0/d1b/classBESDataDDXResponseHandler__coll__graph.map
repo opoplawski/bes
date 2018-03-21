@@ -1,0 +1,7 @@
+<map id="BESDataDDXResponseHandler" name="BESDataDDXResponseHandler">
+<area shape="rect" id="node2" href="$d4/d3f/classBESResponseHandler.html" title="handler object that knows how to create a specific response object " alt="" coords="46,316,230,481"/>
+<area shape="rect" id="node3" href="$d9/d76/classBESObj.html" title="Base object for bes objects. " alt="" coords="5,5,103,97"/>
+<area shape="rect" id="node4" href="$da/d1a/classBESResponseObject.html" title="Abstract base class representing a specific set of information in response to a request to the BES..." alt="" coords="51,147,227,253"/>
+<area shape="rect" id="node5" title="STL class. " alt="" coords="253,161,333,239"/>
+<area shape="rect" id="node6" title="STL class. " alt="" coords="229,5,356,97"/>
+</map>
