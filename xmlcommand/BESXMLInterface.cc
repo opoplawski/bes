@@ -180,6 +180,9 @@ void BESXMLInterface::build_data_request_plan()
                 BESDataHandlerInterface &current_dhi = current_cmd->get_xmlcmd_dhi();
 
                 string return_as = current_dhi.data[RETURN_CMD];
+                BESDEBUG("bes", "=====>>>>>>>>>>>>>>>  return_as =" << return_as << endl);
+                bool found = BESReturnManager::TheManager()->find_transmitter(return_as);
+                BESDEBUG("bes", "=====>>>>>>>>>>>>>>>  found =" << found << endl);
                 if (!return_as.empty() && !BESReturnManager::TheManager()->find_transmitter(return_as))
                     throw BESSyntaxUserError(string("Unable to find transmitter ").append(return_as), __FILE__,
                         __LINE__);

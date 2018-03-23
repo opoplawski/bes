@@ -3,7 +3,7 @@
     <setContext name="dap_format">dap2</setContext>
     <setContainer name="c" space="catalog">/data/ncml/gdal/h02v10_3Files_tif.ncml</setContainer>
     <define name="d">
-	    <container name="c"></container>
+	    <container name="c"/>
     </define>
-    <get type="dods" definition="d" returnAs="nc"/>
+    <get type="dods" definition="d" returnAs="netcdf"/>
 </request>
