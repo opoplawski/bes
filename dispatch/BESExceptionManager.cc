@@ -169,13 +169,19 @@ int BESExceptionManager::handle_exception(BESError &e, BESDataHandlerInterface &
 {
     // Let's see if any of these exception callbacks can handle the
     // exception. The first callback that can handle the exception wins
-
+#if 0
     for (ehm_iter i = _ehm_list.begin(), ei = _ehm_list.end(); i != ei; ++i) {
         p_bes_ehm p = *i;
         int handled = p(e, dhi);
         if (handled) {
             return handled;
         }
+    }
+#endif
+
+    int handle = BESDapError::handleException(e, dhi);
+    if (handle) {
+    		return handle;
     }
 
     dhi.error_info = BESInfoList::TheList()->build_info();
