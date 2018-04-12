@@ -33,10 +33,11 @@
 #ifndef BESDapError_h_
 #define BESDapError_h_ 1
 
+#include <Error.h>
+
 #include "BESError.h"
 #include "BESDataHandlerInterface.h"
 
-#include "Error.h"
 
 /**
  * @brief error object created from libdap error objects and can handle

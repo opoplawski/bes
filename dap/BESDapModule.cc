@@ -121,8 +121,10 @@ void BESDapModule::initialize(const string &modname)
 	BESReturnManager::TheManager()->add_transmitter(DAP2_FORMAT, new BESDapTransmit());
 	// TODO ?? BESReturnManager::TheManager()->add_transmitter( DAP4_FORMAT, new BESDapTransmit( ) );
 
+#if 0
 	BESDEBUG("dap", "    adding dap exception handler" << endl);
 	BESExceptionManager::TheEHM()->add_ehm_callback(BESDapError::handleException);
+#endif
 
 #if 0
 	// Aggregations are no longer run. jhrg 11/9/17

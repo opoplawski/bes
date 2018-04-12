@@ -56,6 +56,8 @@
 
 #include "BESExceptionManager.h"
 
+#include "BESDapError.h"
+
 #include "BESTransmitterNames.h"
 #include "BESDataNames.h"
 #include "BESTransmitterNames.h"
@@ -380,22 +382,22 @@ int BESInterface::execute_request(const string &from)
     }
     catch (BESError & ex) {
         timeout_jump_valid = false;
-        status = BESExceptionManager::TheEHM()->handle_exception(ex, *d_dhi_ptr);
+        status = BESDapError::handleException(ex, *d_dhi_ptr);
     }
     catch (bad_alloc &e) {
         timeout_jump_valid = false;
         BESInternalFatalError ex(string("BES out of memory: ") + e.what(), __FILE__, __LINE__);
-        status = BESExceptionManager::TheEHM()->handle_exception(ex, *d_dhi_ptr);
+        status = BESDapError::handleException(ex, *d_dhi_ptr);
     }
     catch (exception &e) {
         timeout_jump_valid = false;
         BESInternalFatalError ex(string("C++ Exception: ") + e.what(), __FILE__, __LINE__);
-        status = BESExceptionManager::TheEHM()->handle_exception(ex, *d_dhi_ptr);
+        status = BESDapError::handleException(ex, *d_dhi_ptr);
     }
     catch (...) {
         timeout_jump_valid = false;
         BESInternalError ex("An undefined exception has been thrown", __FILE__, __LINE__);
-        status = BESExceptionManager::TheEHM()->handle_exception(ex, *d_dhi_ptr);
+        status = BESDapError::handleException(ex, *d_dhi_ptr);
     }
 
 #if 0

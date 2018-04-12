@@ -37,6 +37,7 @@
 #include "BESExceptionManager.h"
 
 #include "BESError.h"
+#include "BESDapError.h"
 #include "TheBESKeys.h"
 #include "BESInfoList.h"
 #include "BESLog.h"

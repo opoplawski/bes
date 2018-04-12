@@ -68,8 +68,10 @@ TestModule::initialize( const string &modname )
     BESXMLCommand::add_command( TEST_RESPONSE,
 				TestCommand::CommandBuilder ) ;
 
+#if 0
     BESDEBUG( "test", "    adding Test exception callback" << endl ) ;
     BESExceptionManager::TheEHM()->add_ehm_callback( TestException::handleException ) ;
+#endif
 
     BESDEBUG( "test", "Done Initializing Test Module " << modname << endl ) ;
 }
