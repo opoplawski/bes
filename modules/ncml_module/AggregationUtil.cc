@@ -745,6 +745,8 @@ void AggregationUtil::transferArrayConstraints(Array* pToArray, const Array& fro
     if (skipFirstToDim) {
         skipDelta -= 1;
     }
+    BESDEBUG(debugChannel, ">>>>>>>>>>>>>>>>>>>>>>>from dim = " << fromArray.dimensions() + skipDelta << " to dim = " << pToArray->dimensions() << endl);
+
     if (skipDelta < 0 || (pToArray->dimensions() + skipDelta != const_cast<Array&>(fromArrayConst).dimensions())) {
         throw AggregationException("AggregationUtil::transferArrayConstraints: "
             "Mismatched dimensionalities!");
@@ -763,6 +765,7 @@ void AggregationUtil::transferArrayConstraints(Array* pToArray, const Array& fro
     Array::Dim_iter fromArrEndIt = fromArray.dim_end();
     Array::Dim_iter toArrIt = pToArray->dim_begin();
     for (; fromArrIt != fromArrEndIt; ++fromArrIt) {
+        BESDEBUG(debugChannel, ">>>>>>>>>>>>>>>>>>>>>>>from name = " << fromArrIt->name << " to name = " << toArrIt->name << endl);
         if (skipFirstFromDim && (fromArrIt == fromArray.dim_begin())) {
             // If we skip first to array as well, increment
             // before the next call.
