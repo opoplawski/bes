@@ -163,9 +163,9 @@ void GridAggregateOnOuterDimension::transferConstraintsToSubGridMaps(Grid* pSubG
     Map_iter subGridMapIt = pSubGrid->map_begin();
     for (Map_iter it = map_begin(); it != map_end(); ++it) {
         // Skip the new outer dimension
-        if (it == map_begin()) {
-            continue;
-        }
+//        if (it == map_begin()) {
+//            continue;
+//        }
         Array* subGridMap = static_cast<Array*>(*subGridMapIt);
         Array* superGridMap = static_cast<Array*>(*it);
         agg_util::AggregationUtil::transferArrayConstraints(subGridMap, *superGridMap, false, // skipFirstDim = false since map sizes consistent

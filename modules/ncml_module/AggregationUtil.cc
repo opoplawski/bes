@@ -745,7 +745,7 @@ void AggregationUtil::transferArrayConstraints(Array* pToArray, const Array& fro
     if (skipFirstToDim) {
         skipDelta -= 1;
     }
-    BESDEBUG(debugChannel, ">>>>>>>>>>>>>>>>>>>>>>>from dim = " << fromArray.dimensions() + skipDelta << " to dim = " << pToArray->dimensions() << endl);
+    BESDEBUG(debugChannel, ">>>>>>>>>>>>>>>>>>>>>>skipDelta = " << skipDelta << ", from dim = " << fromArray.name() << " to dim = " << pToArray->name() << endl);
 
     if (skipDelta < 0 || (pToArray->dimensions() + skipDelta != const_cast<Array&>(fromArrayConst).dimensions())) {
         throw AggregationException("AggregationUtil::transferArrayConstraints: "
