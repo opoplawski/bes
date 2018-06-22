@@ -5,6 +5,6 @@
     <define name="d">
 	<container name="c"></container>
     </define>
-    <get type="dods" definition="d" returnAs="netcdf"/>
+    <get type="dds" definition="d"/>
 </request>
 

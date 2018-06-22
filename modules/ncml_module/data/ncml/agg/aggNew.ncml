@@ -5,5 +5,5 @@
     <netcdf location="data/nc/jan.nc" ncoords="31"/> 
     <netcdf location="data/nc/feb.nc" ncoords="28"/>
   </aggregation>
-  <!-- variable name="SRB1" orgName="T" / -->
+  <variable name="SRB" orgName="T" />
 </netcdf>
